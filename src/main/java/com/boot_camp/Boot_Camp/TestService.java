@@ -1,19 +1,14 @@
 package com.boot_camp.Boot_Camp;
 
-import com.boot_camp.Boot_Camp.entity.UserEntity;
-import com.boot_camp.Boot_Camp.repository.UserRepository;
-import com.boot_camp.Boot_Camp.security.Security;
+import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import java.util.List;
 
 
 @Service
 public class TestService {
     @Autowired
-    private UserRepository userRepository;
+    private MemberRepository memberRepository;
 
 
 //    @PostConstruct
