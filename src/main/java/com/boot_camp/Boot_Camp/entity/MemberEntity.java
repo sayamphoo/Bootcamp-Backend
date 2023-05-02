@@ -28,7 +28,7 @@ public class MemberEntity {
     @Field(type = FieldType.Text, name = "position")
     private String position;
 
-    @Field(type = FieldType.Text, name = "sex",value = "")
+    @Field(type = FieldType.Text, name = "sex")
     private String sex;
 
     @Field(type = FieldType.Integer, name = "point")

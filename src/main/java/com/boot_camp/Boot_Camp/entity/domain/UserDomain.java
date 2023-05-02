@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 @EntityScan
 @Getter
 @Setter
-public class LoginDomain {
+public class UserDomain {
     private int code = StatusCodeEnum.NOT_FOUND.getValue();
     private String accessToken = "";
 }

@@ -1,10 +1,12 @@
 package com.boot_camp.Boot_Camp.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -13,9 +15,11 @@ public class JwtTokenProvider {
     private String SECRET_KEY;
 
     public String generateToken(Map<String, Object> claims) {
+        final long EXPIRATION_TIME =  15L*(1000*60*60*24); // 15 วัน
         return Jwts.builder()
                 .setClaims(claims)
-                .setExpiration(new Date((new Date()).getTime() + 86400000L * 45))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
                 .compact();
     }
@@ -31,15 +35,13 @@ public class JwtTokenProvider {
         return false;
     }
 
-    public String readToken(String token) {
+    public Claims readToken(String token) {
         if (validateToken(token)) {
             return Jwts.parser()
                     .setSigningKey(SECRET_KEY)
                     .parseClaimsJws(token)
-                    .getBody().getExpiration().toString();
+                    .getBody();
         }
-
-        return "";
-
+        return null;
     }
 }
