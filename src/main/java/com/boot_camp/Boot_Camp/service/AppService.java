@@ -32,7 +32,7 @@ public class AppService extends Structure {
             MemberDomain domain = new MemberDomain(entity);
             domain.setPosition("sd");
             userRepository.save(domain.toEntity());
-
+//dsd
             if (security.encodeHashCompare(e.getPassword(), entity.getPassword())) {
                 String token = security.generateToken(
                         resUserClient(
