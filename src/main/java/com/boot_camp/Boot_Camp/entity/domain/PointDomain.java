@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Point {
+public class PointDomain {
     private int code = StatusCodeEnum.NOT_FOUND.getValue();
     private int point = -1;
 }

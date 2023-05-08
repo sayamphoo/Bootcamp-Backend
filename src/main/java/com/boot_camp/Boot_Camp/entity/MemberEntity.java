@@ -8,6 +8,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.Random;
+
 @Document(indexName = "member")
 @Getter
 @Setter
@@ -15,6 +17,8 @@ public class MemberEntity {
     @Id
     @ReadOnlyProperty
     private String id;
+
+    private int ids;
 
     @Field(type = FieldType.Text, name = "username")
     private String username;
