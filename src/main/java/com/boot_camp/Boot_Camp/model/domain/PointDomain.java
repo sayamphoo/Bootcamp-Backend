@@ -1,7 +1,7 @@
-package com.boot_camp.Boot_Camp.entity.domain;
+package com.boot_camp.Boot_Camp.model.domain;
 
 
-import com.boot_camp.Boot_Camp.service.StatusCodeEnum;
+import com.boot_camp.Boot_Camp.enums.StatusCodeEnum;
 import lombok.Getter;
 import lombok.Setter;
 

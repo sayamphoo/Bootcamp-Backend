@@ -1,4 +1,4 @@
-package com.boot_camp.Boot_Camp.service;
+package com.boot_camp.Boot_Camp.enums;
 
 public enum StatusCodeEnum {
     SUCCESS("Success",200),

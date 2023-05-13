@@ -1,11 +1,8 @@
 package com.boot_camp.Boot_Camp;
 
-import com.boot_camp.Boot_Camp.entity.MemberEntity;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 
 
 @Service

@@ -7,22 +7,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class Security extends JwtTokenProvider {
 
-
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public Security() {
         bCryptPasswordEncoder = new BCryptPasswordEncoder();
     }
 
-    public String encodeHash(String str) {
-        if (!str.isEmpty()) {
+    public String encodePassword(String str) {
+        if (str != null) {
             return bCryptPasswordEncoder.encode(str);
-        } else {
-            return "";
         }
+        return "";
     }
 
-    public Boolean encodeHashCompare(String pass, String hash) {
+    public Boolean comparePasswords(String pass, String hash) {
         if (!(pass.isEmpty() && hash.isEmpty())) {
             return bCryptPasswordEncoder.matches(pass, hash);
         } else return false;
