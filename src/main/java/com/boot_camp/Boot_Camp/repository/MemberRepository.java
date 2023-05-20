@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface MemberRepository extends ElasticsearchRepository<MemberEntity, String> {
-    public MemberEntity findByUsername(String username);
-    public MemberEntity findByIdMember(String id);
+    MemberEntity findByUsername(String username);
+    MemberEntity findByIdAccount(String id);
     List<MemberEntity> findByStore(boolean store);
 }

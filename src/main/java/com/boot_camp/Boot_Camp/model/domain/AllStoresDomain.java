@@ -12,7 +12,7 @@ public class AllStoresDomain {
 
     public AllStoresDomain(){}
     public AllStoresDomain(MemberEntity e) {
-        this.id = e.getIdMember();
+        this.id = e.getIdAccount();
         this.name = e.getName();
     }
 }

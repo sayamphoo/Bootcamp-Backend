@@ -1,6 +1,6 @@
 package com.boot_camp.Boot_Camp.config;
 
-import com.boot_camp.Boot_Camp.middleware.AuthMiddleware;
+import com.boot_camp.Boot_Camp.middleware.RequestAuthorizationMiddleware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
     @Autowired
-    private AuthMiddleware authMiddleware;
+    private RequestAuthorizationMiddleware requestAuthorizationMiddleware;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic().and().antMatcher("/api/**")
@@ -26,7 +26,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter imple
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-       registry.addInterceptor(authMiddleware);
+       registry.addInterceptor(requestAuthorizationMiddleware);
     }
 
     @Override
