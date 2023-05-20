@@ -14,13 +14,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource("file:${elasticsearch.config.path}")
+//@PropertySource("file:${elasticsearch.config.path}")
 public class ElasticsearchConfiguration {
-    @Value("${elasticsearch.cluster}")
+    @Value("${spring.data.elasticsearch.client.cluster}")
     private String EsClusterName;
-    @Value("${elasticsearch.host}")
+    @Value("${spring.data.elasticsearch.client.host}")
     private String host;
-    @Value("${elasticsearch.port}")
+    @Value("${spring.data.elasticsearch.client.port}")
     private int port;
 //    @Value("${elasticsearch.username}")
 //    private String userName;
