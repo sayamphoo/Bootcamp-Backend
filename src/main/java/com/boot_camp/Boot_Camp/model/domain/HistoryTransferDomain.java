@@ -10,15 +10,11 @@ import java.util.Date;
 @Getter
 @Setter
 public class HistoryTransferDomain {
-    //    state : String
-//    payee : String
-//    date : String
-//    point : int
 
     private String state; // withdrawal and deposit
-    private Date date;
+    private String date;
+    private String opposite;
     private int point;
-
 
     public HistoryTransferDomain() {
     }
@@ -27,5 +23,6 @@ public class HistoryTransferDomain {
         this.state = e.getState();
         this.date = e.getDate();
         this.point = e.getPoint();
+        this.opposite = e.getOpposite();
     }
 }

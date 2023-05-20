@@ -1,12 +1,16 @@
 package com.boot_camp.Boot_Camp.services.stroes;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.boot_camp.Boot_Camp.model.domain.AllStoresDomain;
+import com.boot_camp.Boot_Camp.model.domain.MenuStore;
+import com.boot_camp.Boot_Camp.model.domain.MenuStoreDomain;
+import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
+import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import com.boot_camp.Boot_Camp.services.UtilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +22,7 @@ import com.boot_camp.Boot_Camp.security.Security;
 import com.boot_camp.Boot_Camp.services.members.MembersService;
 import com.boot_camp.Boot_Camp.storages.ImageStorage;
 
+
 @Service
 public class StoresService {
 
@@ -26,6 +31,8 @@ public class StoresService {
 
     @Autowired
     private ShopsRepository shopsRepository;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Autowired
     private MembersService membersService;
@@ -36,28 +43,65 @@ public class StoresService {
     @Autowired
     private Security security;
 
-    public void store(String token, String name, List<MultipartFile> files) throws Exception {
-        if (files == null || !security.validateToken(token)) {
+    //upload menu images
+    public void store(String id, String name, int price, int exchange, int receive, List<MultipartFile> files) throws Exception {
+        if (files == null) {
             return;
         }
 
-        List<String> pictureUrls = new ArrayList<>();
+        String pictureUrls = "";
         for (MultipartFile file : files) {
             String fileName = String.format("%s.png", (System.currentTimeMillis()));
             Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            pictureUrls.add(fileName);
+            pictureUrls = fileName;
         }
-
-        String memberId = utilService.searchDatabaseID(security.getIdToken(token));
-        StoreMenuEntity storeMenuEntity = new StoreMenuEntity(memberId, name, pictureUrls);
+        StoreMenuEntity storeMenuEntity = new StoreMenuEntity(id, name, price, exchange,receive, pictureUrls);
         shopsRepository.save(storeMenuEntity);
+
     }
 
-//    ---------- getStores All
-
+    //    ---------- getStores All
     public Iterable<StoreMenuEntity> getAll() {
         return shopsRepository.findAll();
+    }
+
+    // getMenuDetail
+
+    public MenuStoreDomain getStoresDetail(String id) {
+        MenuStoreDomain menuStoreDomains = new MenuStoreDomain();
+        List<StoreMenuEntity> detailMenuOptional = shopsRepository.findByIdAccount(id);
+
+        if (detailMenuOptional != null) {
+            List<MenuStore> menuItems = new ArrayList<>();
+            for (StoreMenuEntity storeMenuEntity : detailMenuOptional) {
+                menuItems.add(new MenuStore(storeMenuEntity.getNameMenu(), storeMenuEntity.getPrice(), storeMenuEntity.getExchange(),storeMenuEntity.getReceive(), storeMenuEntity.getPictures()));
+            }
+
+            menuStoreDomains.setStorePicture(memberRepository.findById(id).get().getPicture());
+            menuStoreDomains.setMenuStores(menuItems);
+
+        }
+
+        return menuStoreDomains;
+    }
+
+    public String getPictureStore(String id) {
+        return memberRepository.findById(id).get().getPicture();
+    }
+
+
+    public void uploadPictureStore(String id, MultipartFile files) throws IOException {
+        if (files == null) {
+            return;
+        }
+        String fileName = String.format("%s.png", (System.currentTimeMillis()));
+        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
+        Files.copy(files.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+        MemberEntity e = memberRepository.findById(id).get();
+        e.setPicture(fileName);
+        memberRepository.save(e);
     }
 
     public void deleteAll() {

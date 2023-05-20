@@ -8,8 +8,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import java.awt.image.BufferedImage;
 
 @Configuration
-public class BufferedImageConverter {
-
+public class BufferedImageConverterConfiguration {
     @Bean
     public HttpMessageConverter<BufferedImage> httpMessageConverter() {
         return new BufferedImageHttpMessageConverter();

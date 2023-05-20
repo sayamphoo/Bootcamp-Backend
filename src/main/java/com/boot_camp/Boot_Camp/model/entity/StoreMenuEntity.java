@@ -8,7 +8,6 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.util.List;
 
 @Getter
 @Setter
@@ -18,20 +17,33 @@ public class StoreMenuEntity {
     @ReadOnlyProperty
     private String id;
 
-    @Field(type = FieldType.Text, name = "memberId")
-    private String memberId;
+    @Field(type = FieldType.Text, name = "idAccount")
+    private String idAccount;
 
     @Field(type = FieldType.Text, name = "nameMenu")
     private String nameMenu;
 
+    @Field(type = FieldType.Integer, name = "price")
+    private int price;
+
+    @Field(type = FieldType.Integer, name = "exchange")
+    private int exchange;
+
+    @Field(type = FieldType.Integer, name = "receive")
+    private int receive;
+
     @Field(type = FieldType.Text, name = "pictures")
-    private List<String> pictures;
+    private String pictures;
 
-    public StoreMenuEntity() {}
+    public StoreMenuEntity() {
+    }
 
-    public StoreMenuEntity(String memberId, String nameMenu, List<String> pictures) {
-        this.memberId = memberId;
+    public StoreMenuEntity(String memberId, String nameMenu, int price, int exchange, int receive, String pictures) {
+        this.idAccount = memberId;
         this.nameMenu = nameMenu;
         this.pictures = pictures;
+        this.price = price;
+        this.receive = receive;
+        this.exchange = exchange;
     }
 }

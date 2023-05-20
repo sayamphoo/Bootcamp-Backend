@@ -1,14 +1,18 @@
 package com.boot_camp.Boot_Camp.model.domain;
 
-import com.boot_camp.Boot_Camp.enums.StatusCodeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.http.HttpStatus;
 
 @EntityScan
 @Getter
 @Setter
 public class MemberDomain {
-    private int code = StatusCodeEnum.NOT_FOUND.getValue();
+    private int code = HttpStatus.NOT_FOUND.value();
+    private String message;
+    private boolean store;
     private String accessToken = "";
+    private String idAccount;
+
 }

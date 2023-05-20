@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class MemberWrapper implements Cloneable {
 
-    private String idMember;
+    private String idAccount;
     private String name;
     private String username;
     private String password;
@@ -20,7 +20,7 @@ public class MemberWrapper implements Cloneable {
     public MemberWrapper() {}
 
     public MemberWrapper(MemberEntity e) {
-        this.idMember = e.getIdMember();
+        this.idAccount = e.getId();
         this.name = e.getName();
         this.username = e.getUsername();
         this.password = e.getPassword();
@@ -32,7 +32,7 @@ public class MemberWrapper implements Cloneable {
 
     public MemberEntity toEntity() {
         MemberEntity e = new MemberEntity();
-        e.setIdMember(this.idMember);
+        e.setIdAccount(this.idAccount);
         e.setName(this.name);
         e.setUsername(this.username);
         e.setPassword(this.password);
