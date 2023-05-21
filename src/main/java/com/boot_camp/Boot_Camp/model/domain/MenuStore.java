@@ -4,6 +4,7 @@ public class MenuStore {
     private String nameMenu;
     private String pictures;
     private int price;
+<<<<<<< HEAD
     private int exchange;
     private int receive;
 
@@ -21,6 +22,15 @@ public class MenuStore {
 
     public void setReceive(int receive) {
         this.receive = receive;
+=======
+    private int point;
+
+    public MenuStore(String nameMenu, int price, int point, String pictures) {
+        this.nameMenu = nameMenu;
+        this.pictures = pictures;
+        this.price = price;
+        this.point = point;
+>>>>>>> origin/master
     }
 
     public int getPrice() {
@@ -31,12 +41,21 @@ public class MenuStore {
         this.price = price;
     }
 
+<<<<<<< HEAD
     public int getExchange() {
         return exchange;
     }
 
     public void setExchange(int exchange) {
         this.exchange = exchange;
+=======
+    public int getPoint() {
+        return point;
+    }
+
+    public void setPoint(int point) {
+        this.point = point;
+>>>>>>> origin/master
     }
 
     public String getNameMenu() {
