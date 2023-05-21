@@ -26,14 +26,9 @@ public class StoresController {
 
 
     @PostMapping(value = "/upload-menu", consumes = "multipart/form-data")
-    public int upload(@RequestParam("name") String name,
-                      @RequestParam("price") int price,
-                      @RequestParam("exchange") int exchange,
-                      @RequestParam("receive") int receive,
-                      @RequestParam("file") List<MultipartFile> file,
-                      HttpServletRequest req) throws Exception {
+    public int upload(@RequestParam("name") String name, @RequestParam("price") int price, @RequestParam("exchange") int exchange, @RequestParam("receive") int receive, @RequestParam("file") List<MultipartFile> file, HttpServletRequest req) throws Exception {
         String id = req.getAttribute("id").toString();
-        storesService.store(id, name, price, exchange,receive, file);
+        storesService.store(id, name, price, exchange, receive, file);
         return 0;
     }
 
