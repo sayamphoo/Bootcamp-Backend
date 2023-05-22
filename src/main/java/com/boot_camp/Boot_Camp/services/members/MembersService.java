@@ -79,7 +79,6 @@ public class MembersService {
         String sex = w.getSex();
         String password = w.getPassword();
 
-
         if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 ) {
             memberDomain.setCode(HttpStatus.BAD_REQUEST.value());
             memberDomain.setMessage("Please provide valid input");
@@ -111,7 +110,7 @@ public class MembersService {
         return matcher.matches();
     }
 
-    public void resetPassword(ResetPasswordWrapper resetPasswordWrapper) {
+    public String resetPassword(ResetPasswordWrapper resetPasswordWrapper) {
         String id = resetPasswordWrapper.getId();
         String oldPassword = resetPasswordWrapper.getOldPassword();
         String newPassword = resetPasswordWrapper.getNewPassword();
@@ -122,12 +121,15 @@ public class MembersService {
             if (security.comparePasswords(oldPassword, entity.getPassword())) {
                 entity.setPassword(security.encodePassword(newPassword));
                 memberRepo.save(entity);
+                return "Success";
             } else {
                // throw new IllegalArgumentException("Incorrect old password.");
             }
         } else {
            // throw new IllegalArgumentException("Member not found.");
         }
+
+        return "no success";
     }
 
     //    ตรวจสอบว่ามีสามาชิกอยู่แล้วหรือไม่ด้วย username------------------------
@@ -205,7 +207,6 @@ public class MembersService {
         return transferPointDomain;
     }
 
-
     public List<HistoryTransferDomain> getHistoryTransDomain(String id) {
         List<HistoryTransferEntity> entity = historyTransferRepo.findByIdAccount(id);
         List<HistoryTransferDomain> domain = new ArrayList<>();
@@ -265,7 +266,4 @@ public class MembersService {
         return MatrixToImageWriter.toBufferedImage(bitMatrix);
 
     }
-
-
-
 }

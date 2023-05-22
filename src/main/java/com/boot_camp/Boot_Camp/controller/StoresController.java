@@ -39,7 +39,6 @@ public class StoresController {
         return 0;
     }
 
-
     @GetMapping("/get-all-stores")
     public List<AllStoresDomain> allStoresDomain() {
         return membersService.getAllStores();
@@ -50,6 +49,12 @@ public class StoresController {
         id = utilService.searchDatabaseID(id);
         System.out.println(id);
         return storesService.getStoresDetail(id);
+    }
+
+    @GetMapping("/toStore")
+    public void toStore(HttpServletRequest req) {
+        String id = req.getAttribute("id").toString();
+        storesService.toStore(id,req);
     }
 
     //-----------------------------------------------------------------------------

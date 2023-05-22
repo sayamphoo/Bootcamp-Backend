@@ -30,13 +30,13 @@ public class MemberController {
     private UtilService utilService;
 
     @PostMapping("/login")
-    public MemberDomain signIn(@RequestBody(required = false) MemberWrapper w,HttpServletResponse response) {
-        return membersService.login(w,response);
+    public MemberDomain signIn(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
+        return membersService.login(w, response);
     }
 
     @PostMapping("/register")
     public MemberDomain signUp(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
-        return membersService.register(w,response);
+        return membersService.register(w, response);
     }
 
     @GetMapping("/get-point")
@@ -65,10 +65,10 @@ public class MemberController {
     }
 
     @PutMapping("/reset-password")
-    public void resetPassword(@RequestBody ResetPasswordWrapper resetPasswordWrapper, HttpServletRequest request) {
+    public String resetPassword(@RequestBody ResetPasswordWrapper resetPasswordWrapper, HttpServletRequest request) {
         String id = request.getAttribute("id").toString();
         resetPasswordWrapper.setId(id);
-        membersService.resetPassword(resetPasswordWrapper);
+        return membersService.resetPassword(resetPasswordWrapper);
     }
 
 //    ----------------------------------------------

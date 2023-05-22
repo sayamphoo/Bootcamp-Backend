@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.boot_camp.Boot_Camp.model.domain.MenuStore;
 import com.boot_camp.Boot_Camp.model.domain.MenuStoreDomain;
@@ -21,6 +22,8 @@ import com.boot_camp.Boot_Camp.repository.ShopsRepository;
 import com.boot_camp.Boot_Camp.security.Security;
 import com.boot_camp.Boot_Camp.services.members.MembersService;
 import com.boot_camp.Boot_Camp.storages.ImageStorage;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 @Service
@@ -82,8 +85,18 @@ public class StoresService {
             menuStoreDomains.setMenuStores(menuItems);
 
         }
-
         return menuStoreDomains;
+    }
+
+    public void toStore(String id,HttpServletRequest req) {
+        Optional<MemberEntity> e = memberRepository.findById(id);
+        if (e.isPresent()) {
+            MemberEntity entity = e.get();
+            if (!entity.isStore()) {
+                entity.setStore(true);
+                memberRepository.save(entity);
+            }
+        }
     }
 
     public String getPictureStore(String id) {
@@ -107,4 +120,6 @@ public class StoresService {
     public void deleteAll() {
         shopsRepository.deleteAll();
     }
+
+
 }
