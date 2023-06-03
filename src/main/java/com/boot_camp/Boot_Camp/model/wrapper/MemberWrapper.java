@@ -16,6 +16,7 @@ public class MemberWrapper implements Cloneable {
     private boolean store;
     private String sex;
     private int point = 0;
+    private String message;
 
     public MemberWrapper() {}
 

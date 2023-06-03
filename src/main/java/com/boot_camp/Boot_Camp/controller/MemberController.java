@@ -1,10 +1,7 @@
 package com.boot_camp.Boot_Camp.controller;
 
-import com.boot_camp.Boot_Camp.model.domain.HistoryTransferDomain;
-import com.boot_camp.Boot_Camp.model.domain.TransferPointDomain;
+import com.boot_camp.Boot_Camp.model.domain.*;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
-import com.boot_camp.Boot_Camp.model.domain.MemberDomain;
-import com.boot_camp.Boot_Camp.model.domain.PointDomain;
 import com.boot_camp.Boot_Camp.model.wrapper.MemberWrapper;
 import com.boot_camp.Boot_Camp.model.wrapper.ResetPasswordWrapper;
 import com.boot_camp.Boot_Camp.model.wrapper.TransferPointWrapper;
@@ -30,12 +27,12 @@ public class MemberController {
     private UtilService utilService;
 
     @PostMapping("/login")
-    public MemberDomain signIn(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
+    public MemberDomain login(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
         return membersService.login(w, response);
     }
 
     @PostMapping("/register")
-    public MemberDomain signUp(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
+    public MemberDomain register(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
         return membersService.register(w, response);
     }
 
@@ -46,6 +43,11 @@ public class MemberController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
         return membersService.getPoint(id);
+    }
+
+    @GetMapping("/validate-transfer-point")
+    public ValidateTransferPointDomain validateTransferPointDomain(@RequestParam String id_payee) {
+        return membersService.validateTransferPointDomain(id_payee);
     }
 
     @PutMapping("/transfer-point")
@@ -71,6 +73,11 @@ public class MemberController {
         return membersService.resetPassword(resetPasswordWrapper);
     }
 
+//    @PostMapping("/validate-user")
+//    public ValidateDomain validateDomain() {
+//        return membersService.validate();
+//    }
+
 //    ----------------------------------------------
 
     @GetMapping("/delete")
@@ -83,9 +90,9 @@ public class MemberController {
         return membersService.showDatabase();
     }
 
-    @GetMapping(path = "generate-qr", produces = MediaType.IMAGE_PNG_VALUE)
-    public BufferedImage generateQrcode(HttpServletRequest request) {
-        return membersService.generateQrcode(request.getHeader("verify"));
-    }
+//    @GetMapping(path = "generate-qr", produces = MediaType.IMAGE_PNG_VALUE)
+//    public BufferedImage generateQrcode(HttpServletRequest request) {
+//        return membersService.generateQrcode(request.getHeader("verify"));
+//    }
 
 }

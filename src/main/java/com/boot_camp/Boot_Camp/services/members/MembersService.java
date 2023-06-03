@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.text.SimpleDateFormat;
@@ -48,24 +49,30 @@ public class MembersService {
 
     public MemberDomain login(MemberWrapper w, HttpServletResponse response) {
         MemberDomain memberDomain = new MemberDomain();
+
         if (w == null) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
+            memberDomain.setMessage("Invalid login credentials."); // เพิ่มข้อความในกรณีที่เข้าสู่ระบบไม่ถูกต้อง
             return memberDomain;
         }
+
         MemberEntity entity = getMember(w.getUsername());
+
         if (entity != null && security.comparePasswords(w.getPassword(), entity.getPassword())) {
             Map<String, Object> claims = new HashMap<>();
             claims.put("id", entity.getIdAccount());
             claims.put("isStore", entity.isStore());
             String token = security.generateToken(claims);
+
             memberDomain.setCode(HttpStatus.OK.value());
             memberDomain.setAccessToken(token);
             memberDomain.setIdAccount(entity.getIdAccount());
             memberDomain.setStore(entity.isStore());
-            return memberDomain;
+        } else {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            memberDomain.setMessage("Invalid login credentials."); // เพิ่มข้อความในกรณีที่เข้าสู่ระบบไม่ถูกต้อง
         }
 
-        response.setStatus(HttpStatus.NOT_FOUND.value());
         return memberDomain;
     }
 
@@ -79,7 +86,7 @@ public class MembersService {
         String sex = w.getSex();
         String password = w.getPassword();
 
-        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 ) {
+        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || isValidEmail(username)) {
             memberDomain.setCode(HttpStatus.BAD_REQUEST.value());
             memberDomain.setMessage("Please provide valid input");
             response.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -103,7 +110,7 @@ public class MembersService {
         return memberDomain;
     }
 
-    public boolean isValidEmail(String email) {
+    private boolean isValidEmail(String email) {
         String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         Pattern pattern = Pattern.compile(EMAIL_REGEX);
         Matcher matcher = pattern.matcher(email);
@@ -123,16 +130,14 @@ public class MembersService {
                 memberRepo.save(entity);
                 return "Success";
             } else {
-               // throw new IllegalArgumentException("Incorrect old password.");
+                throw new IllegalArgumentException("Incorrect old password.");
             }
         } else {
-           // throw new IllegalArgumentException("Member not found.");
+            throw new IllegalArgumentException("Member not found.");
         }
-
-        return "no success";
     }
 
-    //    ตรวจสอบว่ามีสามาชิกอยู่แล้วหรือไม่ด้วย username------------------------
+    //    ตรวจสอบว่ามีสามาชิกอยู่แล้วหรือไม่ด้วย username------------------------ห
     private MemberEntity getMember(String username) {
         return memberRepo.findByUsername(username);
     }
@@ -165,7 +170,9 @@ public class MembersService {
         if (originMemberOpt.isPresent() && payeeMember != null) {
             MemberEntity originMember = originMemberOpt.get();
 
-            if (originMember.getPoint() < point) {
+            if (point <= 0) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "point incorrect");
+            } else if (point > originMember.getPoint()) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "not enough point");
             }
 
@@ -223,7 +230,6 @@ public class MembersService {
     }
 
 
-
     public List<AllStoresDomain> getAllStores() {
         List<AllStoresDomain> domain = new ArrayList<>();
         List<MemberEntity> entity = memberRepo.findByStore(true);
@@ -250,20 +256,25 @@ public class MembersService {
         return memberRepo.findAll();
     }
 
-    public BufferedImage generateQrcode(String verify) {
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = null;
+//    public BufferedImage generateQrcode(String verify) {
+//        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+//        BitMatrix bitMatrix;
+//
+//        try {
+//            bitMatrix = qrCodeWriter.encode(
+//                    "test",
+//                    BarcodeFormat.QR_CODE,
+//                    250, 250);
+//        } catch (WriterException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        return MatrixToImageWriter.toBufferedImage(bitMatrix);
+//
+//    }
 
-        try {
-            bitMatrix = qrCodeWriter.encode(
-                    "test",
-                    BarcodeFormat.QR_CODE,
-                    250, 250);
-        } catch (WriterException e) {
-            throw new RuntimeException(e);
-        }
-
-        return MatrixToImageWriter.toBufferedImage(bitMatrix);
-
+    public ValidateTransferPointDomain validateTransferPointDomain(String idPayee) {
+        MemberEntity memberEntity = memberRepo.findByIdAccount(idPayee);
+        return  new ValidateTransferPointDomain(memberEntity);
     }
 }

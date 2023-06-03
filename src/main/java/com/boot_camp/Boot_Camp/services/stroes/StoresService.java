@@ -88,15 +88,17 @@ public class StoresService {
         return menuStoreDomains;
     }
 
-    public void toStore(String id,HttpServletRequest req) {
+    public Boolean toStore(String id){
         Optional<MemberEntity> e = memberRepository.findById(id);
         if (e.isPresent()) {
             MemberEntity entity = e.get();
             if (!entity.isStore()) {
                 entity.setStore(true);
                 memberRepository.save(entity);
+                return true;
             }
         }
+        return false;
     }
 
     public String getPictureStore(String id) {
