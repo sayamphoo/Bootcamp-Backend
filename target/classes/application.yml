@@ -1,0 +1,24 @@
+server:
+  port: 17003
+
+spring:
+  data:
+    elasticsearch:
+      client:
+        host: ${ELASTICSEARCH_HOST:localhost}
+        nodes: ${ELASTICSEARCH_HOST:localhost}
+        cluster: elasticsearch
+        cluster-nodes: ${ELASTICSEARCH_HOST:localhost}
+        port: ${ELASTICSEARCH_PORT:9200}
+      repositories:
+        enabled: true
+
+
+jwt:
+  secret:
+    ']4Vg=vR2EtN9NH1=yj{aUxJ18y7u6>rn8bZ>/aPF:w8~kVF1th&kpzHQ+"}>;*,+'
+
+app:
+  image:
+    directory:
+      "src/main/resources/images"
