@@ -1,5 +1,6 @@
 package com.boot_camp.Boot_Camp.services.members;
 
+import com.boot_camp.Boot_Camp.controller.PersonalDataDomain;
 import com.boot_camp.Boot_Camp.model.domain.*;
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
@@ -10,18 +11,12 @@ import com.boot_camp.Boot_Camp.repository.HistoryTransferRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import com.boot_camp.Boot_Camp.security.Security;
 import com.boot_camp.Boot_Camp.services.UtilService;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -42,11 +37,6 @@ public class MembersService {
 
     //-------- Sign In --------------
 
-//    @PostConstruct
-//    public void dealete() {
-//        historyTransferRepo.deleteAll();
-//    }
-
     public MemberDomain login(MemberWrapper w, HttpServletResponse response) {
         MemberDomain memberDomain = new MemberDomain();
 
@@ -56,7 +46,7 @@ public class MembersService {
             return memberDomain;
         }
 
-        MemberEntity entity = getMember(w.getUsername());
+        MemberEntity entity = getMemberUsername(w.getUsername());
 
         if (entity != null && security.comparePasswords(w.getPassword(), entity.getPassword())) {
             Map<String, Object> claims = new HashMap<>();
@@ -70,7 +60,7 @@ public class MembersService {
             memberDomain.setStore(entity.isStore());
         } else {
             response.setStatus(HttpStatus.NOT_FOUND.value());
-            memberDomain.setMessage("Invalid login credentials."); // เพิ่มข้อความในกรณีที่เข้าสู่ระบบไม่ถูกต้อง
+            memberDomain.setMessage("Invalid login credentials.");
         }
 
         return memberDomain;
@@ -86,17 +76,24 @@ public class MembersService {
         String sex = w.getSex();
         String password = w.getPassword();
 
-        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || isValidEmail(username)) {
+        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || validateEmail(username)) {
             memberDomain.setCode(HttpStatus.BAD_REQUEST.value());
             memberDomain.setMessage("Please provide valid input");
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             return memberDomain;
         }
 
-        if (getMember(username) != null) {
+        if (getMemberUsername(username) != null) {
             memberDomain.setCode(HttpStatus.CONFLICT.value());
             response.setStatus(HttpStatus.CONFLICT.value());
-            memberDomain.setMessage("This username is already taken");
+            memberDomain.setMessage("This Email is already taken");
+            return memberDomain;
+        }
+
+        if (getMemberName(name) != null) {
+            memberDomain.setCode(HttpStatus.CONFLICT.value());
+            response.setStatus(HttpStatus.CONFLICT.value());
+            memberDomain.setMessage("This Username is already taken");
             return memberDomain;
         }
 
@@ -106,14 +103,16 @@ public class MembersService {
         e.setStore(false);
         e.setPoint(3000);
         memberRepo.save(e.toEntity());
+
+        // Login after register
         memberDomain = this.login(w, response);
         return memberDomain;
     }
 
-    private boolean isValidEmail(String email) {
-        String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        Pattern pattern = Pattern.compile(EMAIL_REGEX);
-        Matcher matcher = pattern.matcher(email);
+    private boolean validateEmail(String email) {
+        String pattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        Pattern regex = Pattern.compile(pattern);
+        Matcher matcher = regex.matcher(email);
         return matcher.matches();
     }
 
@@ -138,8 +137,12 @@ public class MembersService {
     }
 
     //    ตรวจสอบว่ามีสามาชิกอยู่แล้วหรือไม่ด้วย username------------------------ห
-    private MemberEntity getMember(String username) {
+    private MemberEntity getMemberUsername(String username) {
         return memberRepo.findByUsername(username);
+    }
+
+    private MemberEntity getMemberName(String name) {
+        return memberRepo.findByName(name);
     }
 
 
@@ -181,9 +184,8 @@ public class MembersService {
             memberRepo.saveAll(Arrays.asList(originMember, payeeMember));
 
             Date date = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-didn't'HH:mm:ss.SSSZ");
             String formattedDate = dateFormat.format(date);
-
             HistoryTransferEntity historyOrigin = new HistoryTransferEntity();
             HistoryTransferEntity historyPayee = new HistoryTransferEntity();
 
@@ -245,6 +247,21 @@ public class MembersService {
         return domain;
     }
 
+    public PersonalDataDomain getPersonalData(String id) {
+        PersonalDataDomain domain = new PersonalDataDomain();
+        Optional<MemberEntity> optional = memberRepo.findById(id);
+        if (optional.isPresent()) {
+            MemberEntity entity = optional.get();
+            domain.setName(entity.getName());
+            domain.setUsername(entity.getUsername());
+            domain.setBirthday(entity.getBirthday().toString());
+            domain.setAge(utilService.calculateAge(entity.getBirthday()));
+            domain.setSex(entity.getSex());
+        }
+
+        return domain;
+    }
+
 //    --------------------------------------------
 
 
@@ -275,6 +292,7 @@ public class MembersService {
 
     public ValidateTransferPointDomain validateTransferPointDomain(String idPayee) {
         MemberEntity memberEntity = memberRepo.findByIdAccount(idPayee);
-        return  new ValidateTransferPointDomain(memberEntity);
+        return new ValidateTransferPointDomain(memberEntity);
     }
+
 }

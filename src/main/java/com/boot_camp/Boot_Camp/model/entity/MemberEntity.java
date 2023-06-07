@@ -1,13 +1,17 @@
 package com.boot_camp.Boot_Camp.model.entity;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.time.LocalDate;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-
-import java.io.File;
 
 @Document(indexName = "member")
 @Getter
@@ -29,8 +33,12 @@ public class MemberEntity {
     @Field(type = FieldType.Text, name = "password")
     private String password;
 
-    @Field(type = FieldType.Text, name = "birthday")
-    private String birthday;
+
+    @Field(type = FieldType.Date,
+            format = DateFormat.date_optional_time,
+            name = "birthday")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC")
+    private LocalDate birthday;
 
     @Field(type = FieldType.Boolean, name = "store")
     private boolean store;
@@ -44,3 +52,4 @@ public class MemberEntity {
     @Field(type = FieldType.Integer, name = "point")
     private int point;
 }
+

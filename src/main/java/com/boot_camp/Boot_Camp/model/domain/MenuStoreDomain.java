@@ -13,6 +13,7 @@ public class MenuStoreDomain {
     public MenuStoreDomain() {}
 
     public MenuStoreDomain(String storePicture, List<MenuStore> list) {
+        this.storePicture = storePicture;
         this.menuStores = list;
     }
 }

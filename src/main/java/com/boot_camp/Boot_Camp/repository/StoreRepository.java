@@ -5,6 +5,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 
 import java.util.List;
 
-public interface ShopsRepository extends ElasticsearchRepository<StoreMenuEntity, String> {
+public interface StoreRepository extends ElasticsearchRepository<StoreMenuEntity, String> {
     List<StoreMenuEntity> findByIdAccount(String s);
+    List<StoreMenuEntity> findByCategory(int category);
 }

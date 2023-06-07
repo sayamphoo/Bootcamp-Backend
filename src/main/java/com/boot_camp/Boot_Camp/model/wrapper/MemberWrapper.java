@@ -1,6 +1,7 @@
 package com.boot_camp.Boot_Camp.model.wrapper;
 
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
+import com.boot_camp.Boot_Camp.services.ComponentService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +26,7 @@ public class MemberWrapper implements Cloneable {
         this.name = e.getName();
         this.username = e.getUsername();
         this.password = e.getPassword();
-        this.birthday = e.getBirthday();
+        this.birthday = e.getBirthday().toString();
         this.store = e.isStore();
         this.sex = e.getSex();
         this.point = e.getPoint();
@@ -37,7 +38,7 @@ public class MemberWrapper implements Cloneable {
         e.setName(this.name);
         e.setUsername(this.username);
         e.setPassword(this.password);
-        e.setBirthday(this.birthday);
+        e.setBirthday(new ComponentService().coverStrToLocaltime(this.birthday));
         e.setStore(this.store);
         e.setSex(this.sex);
         e.setPoint(this.point);

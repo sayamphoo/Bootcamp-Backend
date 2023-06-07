@@ -46,7 +46,7 @@ public class MemberController {
     }
 
     @GetMapping("/validate-transfer-point")
-    public ValidateTransferPointDomain validateTransferPointDomain(@RequestParam String id_payee) {
+    public ValidateTransferPointDomain validateTransferPointDomain(@RequestParam() String id_payee) {
         return membersService.validateTransferPointDomain(id_payee);
     }
 
@@ -71,6 +71,12 @@ public class MemberController {
         String id = request.getAttribute("id").toString();
         resetPasswordWrapper.setId(id);
         return membersService.resetPassword(resetPasswordWrapper);
+    }
+
+    @GetMapping("/get-personal-data")
+    public PersonalDataDomain getPersonalData(HttpServletRequest request) {
+        String id = request.getAttribute("id").toString();
+        return membersService.getPersonalData(id);
     }
 
 //    @PostMapping("/validate-user")

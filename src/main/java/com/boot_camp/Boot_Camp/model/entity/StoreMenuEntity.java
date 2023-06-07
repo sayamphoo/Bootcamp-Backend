@@ -35,15 +35,19 @@ public class StoreMenuEntity {
     @Field(type = FieldType.Text, name = "pictures")
     private String pictures;
 
+    @Field(type = FieldType.Integer, name = "category")
+    private int category;
+
     public StoreMenuEntity() {
     }
 
-    public StoreMenuEntity(String memberId, String nameMenu, int price, int exchange, int receive, String pictures) {
+    public StoreMenuEntity(String memberId, String nameMenu, int price, int exchange, int receive, String pictures,int category) {
         this.idAccount = memberId;
         this.nameMenu = nameMenu;
         this.pictures = pictures;
         this.price = price;
         this.receive = receive;
         this.exchange = exchange;
+        this.category = category;
     }
 }

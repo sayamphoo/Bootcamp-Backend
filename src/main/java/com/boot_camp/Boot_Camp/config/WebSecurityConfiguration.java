@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebSecurity
-
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
     @Autowired
     private RequestAuthorizationMiddleware requestAuthorizationMiddleware;

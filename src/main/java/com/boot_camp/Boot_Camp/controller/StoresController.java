@@ -59,9 +59,15 @@ public class StoresController {
     }
 
     @PostMapping(value = "/upload-menu", consumes = "multipart/form-data")
-    public UtilStoreDomain upload(@RequestParam("name") String name, @RequestParam("price") int price, @RequestParam("exchange") int exchange, @RequestParam("receive") int receive, @RequestParam("file") List<MultipartFile> file, HttpServletRequest req,HttpServletResponse res) throws Exception {
+    public UtilStoreDomain upload(@RequestParam("name") String name,
+                                  @RequestParam("price") int price,
+                                  @RequestParam("exchange") int exchange,
+                                  @RequestParam("receive") int receive,
+                                  @RequestParam("file") List<MultipartFile> file,
+                                  @RequestParam("category") int category,
+                                  HttpServletRequest req, HttpServletResponse res) throws Exception {
         String id = req.getAttribute("id").toString();
-        storesService.store(id, name, price, exchange, receive, file);
+        storesService.store(id, name, price, exchange, receive, file, category);
 
         res.setStatus(HttpStatus.OK.value());
         UtilStoreDomain utilStoreDomain = new UtilStoreDomain();
@@ -71,8 +77,14 @@ public class StoresController {
 
     }
 
+    @GetMapping("/get-menu-category")
+    public List<MenuCategoryDomain> getMenuCategory(
+            @RequestParam("category") int category) {
+        return storesService.getMenuCategory(category);
+    }
+
     @PostMapping(value = "/upload-picture-stores", consumes = "multipart/form-data")
-    public UtilStoreDomain uploadPictureStore(@RequestParam("file") MultipartFile file, HttpServletRequest req,HttpServletResponse res) throws Exception {
+    public UtilStoreDomain uploadPictureStore(@RequestParam("file") MultipartFile file, HttpServletRequest req, HttpServletResponse res) throws Exception {
         String id = req.getAttribute("id").toString();
         storesService.uploadPictureStore(id, file);
 
