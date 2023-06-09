@@ -73,6 +73,8 @@ public class MemberController {
         return membersService.resetPassword(resetPasswordWrapper);
     }
 
+    //dsdssdsd
+
     @GetMapping("/get-personal-data")
     public PersonalDataDomain getPersonalData(HttpServletRequest request) {
         String id = request.getAttribute("id").toString();
