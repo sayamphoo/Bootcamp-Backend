@@ -83,7 +83,6 @@ public class MemberController {
 //    public ValidateDomain validateDomain() {
 //        return membersService.validate();
 //    }
-
 //    ----------------------------------------------
 
     @GetMapping("/delete")

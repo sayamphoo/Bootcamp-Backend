@@ -11,6 +11,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 @Component
 public class RequestAuthorizationMiddleware implements HandlerInterceptor {
 
@@ -50,7 +51,7 @@ public class RequestAuthorizationMiddleware implements HandlerInterceptor {
         ValidateDomain validateDomain = new ValidateDomain();
         validateDomain.setValid(false);
         validateDomain.setMessage("TokenExpired");
-        response.getWriter().write(String.valueOf(new ValidateDomain()));
+        response.getWriter().write(String.valueOf(validateDomain));
         return false;
     }
 }

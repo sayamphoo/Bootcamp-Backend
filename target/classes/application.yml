@@ -13,7 +13,6 @@ spring:
       repositories:
         enabled: true
 
-
 jwt:
   secret:
     ']4Vg=vR2EtN9NH1=yj{aUxJ18y7u6>rn8bZ>/aPF:w8~kVF1th&kpzHQ+"}>;*,+'

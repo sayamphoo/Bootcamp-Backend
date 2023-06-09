@@ -18,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,9 +185,10 @@ public class MembersService {
             payeeMember.setPoint(payeeMember.getPoint() + point);
             memberRepo.saveAll(Arrays.asList(originMember, payeeMember));
 
-            Date date = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-didn't'HH:mm:ss.SSSZ");
-            String formattedDate = dateFormat.format(date);
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            String formattedDate = now.format(formatter);
+
             HistoryTransferEntity historyOrigin = new HistoryTransferEntity();
             HistoryTransferEntity historyPayee = new HistoryTransferEntity();
 
