@@ -136,11 +136,9 @@ public class StoresService {
         }
     }
 
-
     public List<MenuCategoryDomain> getMenuCategory(int category) {
         List<MenuCategoryDomain> domain = new ArrayList<>();
         List<StoreMenuEntity> storeMenuEntities = storeRepository.findByCategory(category);
-
 
         while (!storeMenuEntities.isEmpty()) {
             List<MenuDomain> menuDomains = new ArrayList<>();
@@ -160,7 +158,6 @@ public class StoresService {
                     utilService.searchDatabaseName(accountId),
                     menuDomains));
         }
-
 
         return domain;
     }
