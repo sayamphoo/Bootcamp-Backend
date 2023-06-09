@@ -9,13 +9,11 @@ import com.boot_camp.Boot_Camp.services.UtilService;
 import com.boot_camp.Boot_Camp.services.members.MembersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 @RestController
@@ -32,26 +30,36 @@ public class MemberController {
     }
 
     @PostMapping("/register")
-    public MemberDomain register(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
+    public MemberDomain register(
+            @RequestBody(required = false) MemberWrapper w,
+            HttpServletResponse response) {
+
         return membersService.register(w, response);
     }
 
     @GetMapping("/get-point")
     public PointDomain getPoint(HttpServletRequest request) {
+
         String id = request.getAttribute("id").toString();
         if (id == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "User not found.");
         }
         return membersService.getPoint(id);
     }
 
     @GetMapping("/validate-transfer-point")
-    public ValidateTransferPointDomain validateTransferPointDomain(@RequestParam() String id_payee) {
+    public ValidateTransferPointDomain validateTransferPointDomain(
+            @RequestParam() String id_payee) {
+
         return membersService.validateTransferPointDomain(id_payee);
     }
 
     @PutMapping("/transfer-point")
-    public TransferPointDomain transferPoint(@RequestBody TransferPointWrapper transferPointWrapper, HttpServletRequest request) throws Exception {
+    public TransferPointDomain transferPoint(
+            @RequestBody TransferPointWrapper transferPointWrapper,
+            HttpServletRequest request) throws Exception {
+
         String id = request.getAttribute("id").toString();
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
@@ -61,22 +69,27 @@ public class MemberController {
     }
 
     @GetMapping("/get-history-transfer")
-    public List<HistoryTransferDomain> getHistoryTransDomain(HttpServletRequest request) {
+    public List<HistoryTransferDomain> getHistoryTransDomain(
+            HttpServletRequest request) {
+
         String id = request.getAttribute("id").toString();
         return membersService.getHistoryTransDomain(id);
     }
 
     @PutMapping("/reset-password")
-    public String resetPassword(@RequestBody ResetPasswordWrapper resetPasswordWrapper, HttpServletRequest request) {
+    public String resetPassword(
+            @RequestBody ResetPasswordWrapper resetPasswordWrapper,
+            HttpServletRequest request) {
+
         String id = request.getAttribute("id").toString();
         resetPasswordWrapper.setId(id);
         return membersService.resetPassword(resetPasswordWrapper);
     }
 
-    //dsdssdsd
 
     @GetMapping("/get-personal-data")
-    public PersonalDataDomain getPersonalData(HttpServletRequest request) {
+    public PersonalDataDomain getPersonalData(HttpServletRequest request)
+    {
         String id = request.getAttribute("id").toString();
         return membersService.getPersonalData(id);
     }
@@ -89,11 +102,13 @@ public class MemberController {
 
     @GetMapping("/delete")
     public void delete() {
+
         membersService.delete();
     }
 
     @GetMapping("/show")
     public Iterable<MemberEntity> show() {
+
         return membersService.showDatabase();
     }
 
