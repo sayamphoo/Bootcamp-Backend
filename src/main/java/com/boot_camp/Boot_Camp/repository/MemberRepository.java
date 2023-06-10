@@ -14,6 +14,5 @@ public interface MemberRepository extends ElasticsearchRepository<MemberEntity, 
     MemberEntity findByName(String name);
     MemberEntity findByIdAccount(String id);
     List<MemberEntity> findByStore(boolean store);
-
     Map<String,String> findNameAndIdAccountByIdAccount(List<String> idAccounts);
 }
