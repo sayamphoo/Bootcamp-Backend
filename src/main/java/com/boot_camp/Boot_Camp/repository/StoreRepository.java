@@ -10,4 +10,6 @@ public interface StoreRepository extends ElasticsearchRepository<StoreMenuEntity
     List<StoreMenuEntity> findByCategory(int category);
 
     List<String> findDistinctIdAccountByCategory(int category);
+
+    StoreMenuEntity findByIdAndIdAccount(String idMenu, String id);
 }

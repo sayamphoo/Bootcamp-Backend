@@ -6,6 +6,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UtilStoreDomain {
-    private Boolean status;
+    private int code;
     private String message;
+
+
+    public UtilStoreDomain(int code , String message) {
+        this.code = code;
+        this.message = message;
+    }
 }

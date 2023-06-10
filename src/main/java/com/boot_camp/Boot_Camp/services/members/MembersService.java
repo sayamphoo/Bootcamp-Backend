@@ -38,13 +38,12 @@ public class MembersService {
 
     //-------- Sign In --------------
 
-    public MemberDomain login(MemberWrapper w, HttpServletResponse response) {
+    public MemberDomain login(MemberWrapper w) {
         MemberDomain memberDomain = new MemberDomain();
 
         if (w == null) {
-            response.setStatus(HttpStatus.NOT_FOUND.value());
-            memberDomain.setMessage("Invalid login credentials."); // เพิ่มข้อความในกรณีที่เข้าสู่ระบบไม่ถูกต้อง
-            return memberDomain;
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Invalid login credentials.");
         }
 
         MemberEntity entity = getMemberUsername(w.getUsername());
@@ -59,13 +58,14 @@ public class MembersService {
             memberDomain.setAccessToken(token);
             memberDomain.setIdAccount(entity.getIdAccount());
             memberDomain.setStore(entity.isStore());
-        } else {
-            response.setStatus(HttpStatus.NOT_FOUND.value());
-            memberDomain.setMessage("Invalid login credentials.");
-        }
 
-        return memberDomain;
+            return memberDomain;
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Invalid login credentials.");
+        }
     }
+
 
     //-------- Sign Up --------------
 
@@ -78,28 +78,22 @@ public class MembersService {
         String password = w.getPassword();
 
         if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || validateEmail(username)) {
-            memberDomain.setCode(HttpStatus.BAD_REQUEST.value());
-            memberDomain.setMessage("Please provide valid input");
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
-            return memberDomain;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Please provide valid input");
         }
 
         if (getMemberUsername(username) != null) {
-            memberDomain.setCode(HttpStatus.CONFLICT.value());
-            response.setStatus(HttpStatus.CONFLICT.value());
-            memberDomain.setMessage("This Email is already taken");
-            return memberDomain;
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This Email is already taken");
         }
 
         if (getMemberName(name) != null) {
-            memberDomain.setCode(HttpStatus.CONFLICT.value());
-            response.setStatus(HttpStatus.CONFLICT.value());
-            memberDomain.setMessage("This Username is already taken");
-            return memberDomain;
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This Username is already taken");
         }
 
         MemberWrapper e = w.clone();
-        String idGenerate = String.format("%1d%08d", ((int)(Math.random()*9) + 1),System.currentTimeMillis());
+        String idGenerate = String.format("%1d%08d", ((int) (Math.random() * 9) + 1), System.currentTimeMillis());
         e.setIdAccount(idGenerate);
         e.setPassword(security.encodePassword(password));
         e.setStore(false);
@@ -107,7 +101,8 @@ public class MembersService {
         memberRepo.save(e.toEntity());
 
         // Login after register
-        memberDomain = this.login(w, response);
+        memberDomain = this.login(w);
+
         return memberDomain;
     }
 
@@ -118,7 +113,7 @@ public class MembersService {
         return matcher.matches();
     }
 
-    public String resetPassword(ResetPasswordWrapper resetPasswordWrapper) {
+    public UtilStoreDomain resetPassword(ResetPasswordWrapper resetPasswordWrapper) {
         String id = resetPasswordWrapper.getId();
         String oldPassword = resetPasswordWrapper.getOldPassword();
         String newPassword = resetPasswordWrapper.getNewPassword();
@@ -129,12 +124,15 @@ public class MembersService {
             if (security.comparePasswords(oldPassword, entity.getPassword())) {
                 entity.setPassword(security.encodePassword(newPassword));
                 memberRepo.save(entity);
-                return "Success";
+
+                return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
             } else {
-                throw new IllegalArgumentException("Incorrect old password.");
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Incorrect old password.");
             }
         } else {
-            throw new IllegalArgumentException("Member not found.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Member not found.");
         }
     }
 
@@ -151,12 +149,29 @@ public class MembersService {
     //    getPoint -----------------------
     public PointDomain getPoint(String id) {
         PointDomain point = new PointDomain();
-        MemberEntity entity = memberRepo.findById(id).get();
-        point.setCode(HttpStatus.OK.value());
-        point.setPoint(entity.getPoint());
-        point.setId(entity.getIdAccount());
-        point.setName(entity.getName());
-        return point;
+        Optional<MemberEntity> optional = memberRepo.findById(id);
+        if (optional.isPresent()) {
+            MemberEntity entity = optional.get();
+            point.setCode(HttpStatus.OK.value());
+            point.setPoint(entity.getPoint());
+            point.setId(entity.getIdAccount());
+            point.setName(entity.getName());
+            return point;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Member not found.");
+        }
+
+    }
+
+    public ValidateTransferPointDomain validateTransferPointDomain(String idPayee) {
+        MemberEntity memberEntity = memberRepo.findByIdAccount(idPayee);
+        if (memberEntity == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Member Not Found");
+        }
+        return new ValidateTransferPointDomain(memberEntity);
     }
 
     //    transferPoint
@@ -224,7 +239,9 @@ public class MembersService {
         List<HistoryTransferDomain> domain = new ArrayList<>();
 
         if (entity == null || entity.isEmpty()) {
-            return domain;
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "History not found.");
         }
 
         for (HistoryTransferEntity e : entity) {
@@ -240,7 +257,9 @@ public class MembersService {
         List<MemberEntity> entity = memberRepo.findByStore(true);
 
         if (entity == null || entity.isEmpty()) {
-            return domain;
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Store not found.");
         }
 
         for (MemberEntity e : entity) {
@@ -260,10 +279,16 @@ public class MembersService {
             domain.setBirthday(entity.getBirthday().toString());
             domain.setAge(utilService.calculateAge(entity.getBirthday()));
             domain.setSex(entity.getSex());
+            return domain;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Member not found.");
         }
 
-        return domain;
     }
+
+
 
 //    --------------------------------------------
 
@@ -276,26 +301,5 @@ public class MembersService {
         return memberRepo.findAll();
     }
 
-//    public BufferedImage generateQrcode(String verify) {
-//        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-//        BitMatrix bitMatrix;
-//
-//        try {
-//            bitMatrix = qrCodeWriter.encode(
-//                    "test",
-//                    BarcodeFormat.QR_CODE,
-//                    250, 250);
-//        } catch (WriterException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        return MatrixToImageWriter.toBufferedImage(bitMatrix);
-//
-//    }
-
-    public ValidateTransferPointDomain validateTransferPointDomain(String idPayee) {
-        MemberEntity memberEntity = memberRepo.findByIdAccount(idPayee);
-        return new ValidateTransferPointDomain(memberEntity);
-    }
 
 }

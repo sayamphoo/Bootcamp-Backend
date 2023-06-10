@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class MenuStore {
+    private String id;
     private String nameMenu;
     private String pictures;
     private int price;
@@ -14,7 +15,8 @@ public class MenuStore {
     private int receive;
     private int point;
 
-    public MenuStore(String nameMenu, int price, int exchange, int receive, String pictures) {
+    public MenuStore(String id,String nameMenu, int price, int exchange, int receive, String pictures) {
+        this.id = id;
         this.nameMenu = nameMenu;
         this.pictures = pictures;
         this.price = price;

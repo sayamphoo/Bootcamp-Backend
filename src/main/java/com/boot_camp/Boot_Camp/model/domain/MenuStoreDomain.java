@@ -7,12 +7,14 @@ import java.util.List;
 @Setter
 @Getter
 public class MenuStoreDomain {
+    private String id;
     private String storePicture;
     private List<MenuStore> menuStores;
 
     public MenuStoreDomain() {}
 
-    public MenuStoreDomain(String storePicture, List<MenuStore> list) {
+    public MenuStoreDomain(String id,String storePicture, List<MenuStore> list) {
+        this.id = id;
         this.storePicture = storePicture;
         this.menuStores = list;
     }

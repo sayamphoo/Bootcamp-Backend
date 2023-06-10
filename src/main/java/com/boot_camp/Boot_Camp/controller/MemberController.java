@@ -25,8 +25,8 @@ public class MemberController {
     private UtilService utilService;
 
     @PostMapping("/login")
-    public MemberDomain login(@RequestBody(required = false) MemberWrapper w, HttpServletResponse response) {
-        return membersService.login(w, response);
+    public MemberDomain login(@RequestBody(required = false) MemberWrapper w) {
+        return membersService.login(w);
     }
 
     @PostMapping("/register")
@@ -78,7 +78,7 @@ public class MemberController {
     }
 
     @PutMapping("/reset-password")
-    public String resetPassword(
+    public UtilStoreDomain resetPassword(
             @RequestBody ResetPasswordWrapper resetPasswordWrapper,
             HttpServletRequest request) {
 
@@ -95,11 +95,6 @@ public class MemberController {
         return membersService.getPersonalData(id);
     }
 
-//    @PostMapping("/validate-user")
-//    public ValidateDomain validateDomain() {
-//        return membersService.validate();
-//    }
-//    ----------------------------------------------
 
     @GetMapping("/delete")
     public void delete() {

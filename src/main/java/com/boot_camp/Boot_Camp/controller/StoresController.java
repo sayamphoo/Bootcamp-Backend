@@ -36,46 +36,34 @@ public class StoresController {
     @GetMapping("/get-detail-store")
     public MenuStoreDomain getDetailStore(@RequestParam("id") String id) {
         id = utilService.searchDatabaseID(id);
-        System.out.println(id);
         return storesService.getStoresDetail(id);
     }
 
     @PutMapping("/set-to-store")
     public UtilStoreDomain toStore(HttpServletRequest req, HttpServletResponse res) {
         String id = req.getAttribute("id").toString();
-        Boolean isStore = storesService.toStore(id);
-        UtilStoreDomain utilStoreDomain = new UtilStoreDomain();
-        if (isStore) {
-            res.setStatus(HttpStatus.OK.value());
-            utilStoreDomain.setMessage(HttpStatus.OK.getReasonPhrase());
-        } else {
-            res.setStatus(HttpStatus.NOT_FOUND.value());
-            utilStoreDomain.setMessage(HttpStatus.NOT_FOUND.getReasonPhrase());
-        }
-
-        utilStoreDomain.setStatus(isStore);
-
-        return utilStoreDomain;
+        return storesService.toStore(id);
     }
 
     @PostMapping(value = "/upload-menu", consumes = "multipart/form-data")
-    public UtilStoreDomain upload(@RequestParam("name") String name,
-                                  @RequestParam("price") int price,
-                                  @RequestParam("exchange") int exchange,
-                                  @RequestParam("receive") int receive,
-                                  @RequestParam("file") List<MultipartFile> file,
-                                  @RequestParam("category") int category,
-                                  HttpServletRequest req, HttpServletResponse res) throws Exception {
+    public UtilStoreDomain uploadMenu(@RequestParam("name") String name,
+                                      @RequestParam("price") int price,
+                                      @RequestParam("exchange") int exchange,
+                                      @RequestParam("receive") int receive,
+                                      @RequestParam("file") List<MultipartFile> file,
+                                      @RequestParam("category") int category,
+                                      HttpServletRequest req, HttpServletResponse res) throws Exception {
 
         String id = req.getAttribute("id").toString();
-        storesService.store(id, name, price, exchange, receive, file, category);
 
-        res.setStatus(HttpStatus.OK.value());
-        UtilStoreDomain utilStoreDomain = new UtilStoreDomain();
-        utilStoreDomain.setStatus(true);
-        utilStoreDomain.setMessage(HttpStatus.OK.getReasonPhrase());
-        return utilStoreDomain;
+        return storesService.uploadMenu(id, name, price, exchange, receive, file, category);
 
+    }
+
+    @DeleteMapping("delete-menu")
+    public UtilStoreDomain menuDelete(@RequestParam("name") String idMenu, HttpServletRequest req, HttpServletResponse res) {
+        String id = req.getAttribute("id").toString();
+        return storesService.deleteMenu(id, idMenu);
     }
 
     @GetMapping("/get-menu-category")
@@ -87,14 +75,7 @@ public class StoresController {
     @PostMapping(value = "/upload-picture-stores", consumes = "multipart/form-data")
     public UtilStoreDomain uploadPictureStore(@RequestParam("file") MultipartFile file, HttpServletRequest req, HttpServletResponse res) throws Exception {
         String id = req.getAttribute("id").toString();
-        storesService.uploadPictureStore(id, file);
-
-        res.setStatus(HttpStatus.OK.value());
-        UtilStoreDomain utilStoreDomain = new UtilStoreDomain();
-        utilStoreDomain.setStatus(true);
-        utilStoreDomain.setMessage(HttpStatus.OK.getReasonPhrase());
-
-        return utilStoreDomain;
+        return storesService.uploadPictureStore(id, file);
     }
 
 
