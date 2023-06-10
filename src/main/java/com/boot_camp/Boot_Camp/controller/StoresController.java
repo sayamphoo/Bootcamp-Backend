@@ -66,6 +66,7 @@ public class StoresController {
                                   @RequestParam("file") List<MultipartFile> file,
                                   @RequestParam("category") int category,
                                   HttpServletRequest req, HttpServletResponse res) throws Exception {
+
         String id = req.getAttribute("id").toString();
         storesService.store(id, name, price, exchange, receive, file, category);
 
@@ -78,7 +79,7 @@ public class StoresController {
     }
 
     @GetMapping("/get-menu-category")
-    public List<MenuCategoryDomain> getMenuCategory(
+    public List<AllStoresDomain> getMenuCategory(
             @RequestParam("category") int category) {
         return storesService.getMenuCategory(category);
     }

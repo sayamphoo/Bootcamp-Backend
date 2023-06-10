@@ -15,4 +15,9 @@ public class AllStoresDomain {
         this.id = e.getIdAccount();
         this.name = e.getName();
     }
+
+    public AllStoresDomain(String id,String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

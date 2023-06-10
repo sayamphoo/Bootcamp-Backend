@@ -1,4 +1,4 @@
-package com.boot_camp.Boot_Camp.controller;
+package com.boot_camp.Boot_Camp.model.domain;
 
 import lombok.Getter;
 import lombok.Setter;

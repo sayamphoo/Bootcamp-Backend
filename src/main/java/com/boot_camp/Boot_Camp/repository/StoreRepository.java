@@ -8,4 +8,6 @@ import java.util.List;
 public interface StoreRepository extends ElasticsearchRepository<StoreMenuEntity, String> {
     List<StoreMenuEntity> findByIdAccount(String s);
     List<StoreMenuEntity> findByCategory(int category);
+
+    List<String> findDistinctIdAccountByCategory(int category);
 }

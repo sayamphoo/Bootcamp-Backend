@@ -6,14 +6,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-import com.boot_camp.Boot_Camp.model.domain.MenuDomain;
-import com.boot_camp.Boot_Camp.controller.MenuCategoryDomain;
+import com.boot_camp.Boot_Camp.model.domain.AllStoresDomain;
 import com.boot_camp.Boot_Camp.model.domain.MenuStore;
 import com.boot_camp.Boot_Camp.model.domain.MenuStoreDomain;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import com.boot_camp.Boot_Camp.services.UtilService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +22,7 @@ import com.boot_camp.Boot_Camp.repository.StoreRepository;
 import com.boot_camp.Boot_Camp.security.Security;
 import com.boot_camp.Boot_Camp.services.members.MembersService;
 import com.boot_camp.Boot_Camp.storages.ImageStorage;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class StoresService {
@@ -131,36 +132,80 @@ public class StoresService {
             memberEntity.setPicture(fileName);
             memberRepository.save(memberEntity);
         } else {
-            // Handle the case when member with the specified id is not found
             throw new IllegalArgumentException("Member not found with id: " + id);
         }
     }
 
-    public List<MenuCategoryDomain> getMenuCategory(int category) {
-        List<MenuCategoryDomain> domain = new ArrayList<>();
-        List<StoreMenuEntity> storeMenuEntities = storeRepository.findByCategory(category);
+//    public List<AllStoresDomain> getMenuCategory(int category) {
+//        // สร้างรายการว่างเปล่าที่จะใช้เก็บผลลัพธ์
+//        List<AllStoresDomain> list = new ArrayList<>();
+//
+//        // ค้นหาเมนูร้านค้าจากประเภทที่กำหนดในพารามิเตอร์
+//        List<String> idAccounts = storeRepository.findDistinctIdAccountByCategory(category);
+//
+//        // หากไม่พบเมนูร้านค้าที่ตรงกับประเภทที่กำหนด ให้คืนรายการที่ว่างเปล่า
+//        if (idAccounts.isEmpty()) {
+//            return list;
+//        }
+//
+//        // ใช้ id บัญชีที่พบในเมนูร้านค้า เพื่อค้นหาชื่อสมาชิกและเก็บในรูปแบบของ Map
+//        Map<String, String> idAccountNameMap = memberRepository.findNameByIdAccounts(idAccounts);
+//
+//        // วนลูปผ่าน id บัญชีที่พบในเมนูร้านค้า
+//        for (String idAccount : idAccounts) {
+//            // ใช้ Map เพื่อเข้าถึงชื่อสมาชิกที่เกี่ยวข้องกับ id บัญชี
+//            String name = idAccountNameMap.get(idAccount);
+//
+//            // เพิ่ม AllStoresDomain ใหม่ลงในรายการ
+//            list.add(new AllStoresDomain(idAccount, name));
+//        }
+//
+//        // คืนค่ารายการ AllStoresDomain
+//        return list;
+//    }
 
-        while (!storeMenuEntities.isEmpty()) {
-            List<MenuDomain> menuDomains = new ArrayList<>();
-            String accountId = storeMenuEntities.get(0).getIdAccount();
 
-            Iterator<StoreMenuEntity> iterator = storeMenuEntities.iterator();
-            while (iterator.hasNext()) {
-                StoreMenuEntity entity = iterator.next();
-                if (Objects.equals(accountId, entity.getIdAccount())) {
-                    menuDomains.add(new MenuDomain(entity.getId(), entity.getNameMenu(), entity.getPictures()));
-                    iterator.remove();
-                }
-            }
+    public List<AllStoresDomain> getMenuCategory(int category) {
 
-            domain.add(new MenuCategoryDomain(
-                    accountId,
-                    utilService.searchDatabaseName(accountId),
-                    menuDomains));
+        List<AllStoresDomain> list = new ArrayList<>();
+        List<String> idAccounts = storeRepository.findDistinctIdAccountByCategory(category);
+
+        if (idAccounts.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"");
+        Map<String,String> nameStore = memberRepository.findNameAndIdAccountByIdAccount(idAccounts);
+
+        for (Map.Entry<String, String> entry : nameStore.entrySet()) {
+            list.add(new AllStoresDomain(entry.getValue(),entry.getValue()));
         }
 
-        return domain;
+        return list;
     }
+
+
+//    public List<MenuCategoryDomain> getMenuCategory(int category) {
+//        List<MenuCategoryDomain> domain = new ArrayList<>();
+//        List<StoreMenuEntity> storeMenuEntities = storeRepository.findByCategory(category);
+//
+//        while (!storeMenuEntities.isEmpty()) {
+//            List<MenuDomain> menuDomains = new ArrayList<>();
+//            String accountId = storeMenuEntities.get(0).getIdAccount();
+//
+//            Iterator<StoreMenuEntity> iterator = storeMenuEntities.iterator();
+//            while (iterator.hasNext()) {
+//                StoreMenuEntity entity = iterator.next();
+//                if (Objects.equals(accountId, entity.getIdAccount())) {
+//                    menuDomains.add(new MenuDomain(entity.getId(), entity.getNameMenu(), entity.getPictures()));
+//                    iterator.remove();
+//                }
+//            }
+//
+//            domain.add(new MenuCategoryDomain(
+//                    accountId,
+//                    utilService.searchDatabaseName(accountId),
+//                    menuDomains));
+//        }
+//
+//        return domain;
+//    }
 
 
 }

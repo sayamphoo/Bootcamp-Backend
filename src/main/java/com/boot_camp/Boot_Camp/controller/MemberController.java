@@ -64,6 +64,7 @@ public class MemberController {
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
+
         transferPointWrapper.setOriginID(id);
         return membersService.transferPoint(transferPointWrapper);
     }

@@ -6,6 +6,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface MemberRepository extends ElasticsearchRepository<MemberEntity, String> {
@@ -13,4 +14,6 @@ public interface MemberRepository extends ElasticsearchRepository<MemberEntity, 
     MemberEntity findByName(String name);
     MemberEntity findByIdAccount(String id);
     List<MemberEntity> findByStore(boolean store);
+
+    Map<String,String> findNameAndIdAccountByIdAccount(List<String> idAccounts);
 }

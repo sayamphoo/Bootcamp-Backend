@@ -1,6 +1,6 @@
 package com.boot_camp.Boot_Camp.services.members;
 
-import com.boot_camp.Boot_Camp.controller.PersonalDataDomain;
+import com.boot_camp.Boot_Camp.model.domain.PersonalDataDomain;
 import com.boot_camp.Boot_Camp.model.domain.*;
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletResponse;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -100,7 +99,8 @@ public class MembersService {
         }
 
         MemberWrapper e = w.clone();
-        e.setIdAccount(String.valueOf(System.currentTimeMillis()));
+        String idGenerate = String.format("%1d%08d", ((int)(Math.random()*9) + 1),System.currentTimeMillis());
+        e.setIdAccount(idGenerate);
         e.setPassword(security.encodePassword(password));
         e.setStore(false);
         e.setPoint(3000);
