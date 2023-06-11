@@ -10,7 +10,7 @@
 # # กำหนดพอร์ตที่แอปพลิเคชันจะใช้ภายในคอนเทนเนอร์
 # EXPOSE 17003
 
-# # กำหนดคำสั่งที่จะถูกเรียกเมื่อเริ่มต้นคอนเทนเนอร์
+# # กำหนดคำสั่งที่จะถู กเรียกเมื่อเริ่มต้นคอนเทนเนอร์
 # CMD ["java", "-jar", "BeePoint.jar"]
 
 # ============================================================================================
@@ -20,7 +20,7 @@
 #FROM amazoncorretto:11-alpine
 
 # Base image for amd64 (EC2)
- FROM amd64/amazoncorretto:11-alpine
+FROM amd64/amazoncorretto:11-alpine
 
 WORKDIR /app
 
@@ -29,4 +29,4 @@ COPY ./src/main/resources/application.yml application.yml
 
 EXPOSE 17003
 
-ENTRYPOINT exec java -jar BeePoint.jar --spring.config.location=application.yml
+ENTRYPOINT exec java --enable-preview -jar BeePoint.jar --spring.config.location=application.yml

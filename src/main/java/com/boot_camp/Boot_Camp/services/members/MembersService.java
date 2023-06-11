@@ -11,6 +11,7 @@ import com.boot_camp.Boot_Camp.repository.HistoryTransferRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import com.boot_camp.Boot_Camp.security.Security;
 import com.boot_camp.Boot_Camp.services.UtilService;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -77,7 +78,7 @@ public class MembersService {
         String sex = w.getSex();
         String password = w.getPassword();
 
-        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || validateEmail(username)) {
+        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || EmailValidator.getInstance().isValid(username)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Please provide valid input");
         }

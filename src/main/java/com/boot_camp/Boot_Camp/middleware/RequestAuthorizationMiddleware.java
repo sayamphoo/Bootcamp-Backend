@@ -3,6 +3,7 @@ package com.boot_camp.Boot_Camp.middleware;
 import com.boot_camp.Boot_Camp.model.domain.ValidateDomain;
 import com.boot_camp.Boot_Camp.security.Security;
 import com.boot_camp.Boot_Camp.services.UtilService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ public class RequestAuthorizationMiddleware implements HandlerInterceptor {
     private UtilService utilService;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
+    public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, Object handler) throws IOException {
 
         String path = request.getRequestURI();
         if (path.endsWith("/login")) {
@@ -36,6 +37,7 @@ public class RequestAuthorizationMiddleware implements HandlerInterceptor {
         }
 
         String token = request.getHeader("Authorization");
+
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
             if (security.validateToken(token)) {
@@ -47,11 +49,8 @@ public class RequestAuthorizationMiddleware implements HandlerInterceptor {
                 return true;
             }
         }
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        ValidateDomain validateDomain = new ValidateDomain();
-        validateDomain.setValid(false);
-        validateDomain.setMessage("TokenExpired");
-        response.getWriter().write(String.valueOf(validateDomain));
-        return false;
+
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"TokenExpired");
+
     }
 }

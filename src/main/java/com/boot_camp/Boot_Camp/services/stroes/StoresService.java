@@ -47,18 +47,18 @@ public class StoresService {
 
     //upload menu images
     public UtilStoreDomain uploadMenu(String id, String name,
-                      int price, int exchange,
-                      int receive, List<MultipartFile> files,
-                      int category) throws Exception {
+                                      int price, int exchange,
+                                      int receive, List<MultipartFile> files,
+                                      int category) throws Exception {
 
         if (files == null) {
-           throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Bad Request");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Request");
         }
 
         String pictureUrls = "";
         for (MultipartFile file : files) {
             String fileName = String.format("%s.png", (System.currentTimeMillis()));
-            Path targetLocation = imageStorage.getImageDirectory() .resolve(fileName);
+            Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             pictureUrls = fileName;
         }
@@ -78,20 +78,28 @@ public class StoresService {
     // getMenuDetail
 
     public MenuStoreDomain getStoresDetail(String id) {
-        MenuStoreDomain menuStoreDomains = new MenuStoreDomain();
         List<StoreMenuEntity> detailMenuOptional = storeRepository.findByIdAccount(id);
 
         if (detailMenuOptional != null && !detailMenuOptional.isEmpty()) {
             List<MenuStore> menuItems = new ArrayList<>();
 
             for (StoreMenuEntity storeMenuEntity : detailMenuOptional) {
-                menuItems.add(new MenuStore(storeMenuEntity.getId(), storeMenuEntity.getNameMenu(), storeMenuEntity.getPrice(), storeMenuEntity.getExchange(), storeMenuEntity.getReceive(), storeMenuEntity.getPictures()));
+                menuItems.add(new MenuStore(
+                                storeMenuEntity.getId(),
+                                storeMenuEntity.getNameMenu(),
+                                storeMenuEntity.getPrice(),
+                                storeMenuEntity.getExchange(),
+                                storeMenuEntity.getReceive(),
+                                storeMenuEntity.getPictures()
+                        )
+                );
             }
 
             Optional<MemberEntity> optional = memberRepository.findById(id);
 
             if (optional.isPresent()) {
                 MemberEntity entity = optional.get();
+                MenuStoreDomain menuStoreDomains = new MenuStoreDomain();
                 menuStoreDomains.setId(entity.getIdAccount());
                 menuStoreDomains.setStorePicture(entity.getPicture());
                 menuStoreDomains.setMenuStores(menuItems);
@@ -114,10 +122,10 @@ public class StoresService {
                 memberRepository.save(entity);
                 return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
             } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You is already Store");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You is already Store");
             }
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
         }
     }
 
@@ -151,34 +159,31 @@ public class StoresService {
     }
 
 
-
-
     public List<AllStoresDomain> getMenuCategory(int category) {
 
         List<AllStoresDomain> list = new ArrayList<>();
         List<String> idAccounts = storeRepository.findDistinctIdAccountByCategory(category);
 
-        if (idAccounts.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"");
-        Map<String,String> nameStore = memberRepository.findNameAndIdAccountByIdAccount(idAccounts);
+        if (idAccounts.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "");
+        Map<String, String> nameStore = memberRepository.findNameAndIdAccountByIdAccount(idAccounts);
 
         for (Map.Entry<String, String> entry : nameStore.entrySet()) {
-            list.add(new AllStoresDomain(entry.getValue(),entry.getValue()));
+            list.add(new AllStoresDomain(entry.getValue(), entry.getValue()));
         }
 
         return list;
     }
 
     public UtilStoreDomain deleteMenu(String id, String idMenu) {
-        StoreMenuEntity entity = storeRepository.findByIdAndIdAccount(idMenu,id);
+        StoreMenuEntity entity = storeRepository.findByIdAndIdAccount(idMenu, id);
         if (entity != null) {
             storeRepository.delete(entity);
             return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
         } else {
-          throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
         }
 
     }
-
 
 
 }
