@@ -1,9 +1,11 @@
 package com.boot_camp.Boot_Camp.controller;
 
+import com.boot_camp.Boot_Camp.model.domain.HashDomain;
 import com.boot_camp.Boot_Camp.model.domain.UtilStoreDomain;
 import com.boot_camp.Boot_Camp.model.domain.AllStoresDomain;
 import com.boot_camp.Boot_Camp.model.domain.MenuStoreDomain;
 import com.boot_camp.Boot_Camp.model.entity.StoreMenuEntity;
+import com.boot_camp.Boot_Camp.repository.*;
 import com.boot_camp.Boot_Camp.services.UtilService;
 import com.boot_camp.Boot_Camp.services.members.MembersService;
 import com.boot_camp.Boot_Camp.services.stroes.StoresService;
@@ -15,10 +17,26 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/api/v1/stores")
 public class StoresController {
+
+    @Autowired
+    private HistoryTransferRepository historyTransferRepo;
+    @Autowired
+    private MemberRepository memberRepo;
+    @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
+    private BuyMenuRepository buyRepository;
+
+    @Autowired
+    private StatisticsMenuRepository statisticsMenuRepository;
+
+
     @Autowired
     private StoresService storesService;
     @Autowired
@@ -46,13 +64,14 @@ public class StoresController {
     }
 
     @PostMapping(value = "/upload-menu", consumes = "multipart/form-data")
-    public UtilStoreDomain uploadMenu(@RequestParam("name") String name,
-                                      @RequestParam("price") int price,
-                                      @RequestParam("exchange") int exchange,
-                                      @RequestParam("receive") int receive,
-                                      @RequestParam("file") List<MultipartFile> file,
-                                      @RequestParam("category") int category,
-                                      HttpServletRequest req, HttpServletResponse res) throws Exception {
+    public UtilStoreDomain uploadMenu(
+            @RequestParam("name") String name,
+            @RequestParam("price") int price,
+            @RequestParam("exchange") int exchange,
+            @RequestParam("receive") int receive,
+            @RequestParam("file") List<MultipartFile> file,
+            @RequestParam("category") int category,
+            HttpServletRequest req) throws Exception {
 
         String id = req.getAttribute("id").toString();
 
@@ -60,14 +79,16 @@ public class StoresController {
 
     }
 
-    @DeleteMapping("delete-menu")
-    public UtilStoreDomain menuDelete(@RequestParam("name") String idMenu, HttpServletRequest req, HttpServletResponse res) {
+    @DeleteMapping("/delete-menu")
+    public UtilStoreDomain menuDelete(@RequestParam("idMenu") String idMenu, HttpServletRequest req) {
         String id = req.getAttribute("id").toString();
-        return storesService.deleteMenu(id, idMenu);
+        System.out.println(id);
+        System.out.println(idMenu);
+        return storesService.deleteMenu(idMenu);
     }
 
     @GetMapping("/get-menu-category")
-    public List<AllStoresDomain> getMenuCategory(
+    public Set<AllStoresDomain> getMenuCategory(
             @RequestParam("category") int category) {
         return storesService.getMenuCategory(category);
     }
@@ -76,6 +97,13 @@ public class StoresController {
     public UtilStoreDomain uploadPictureStore(@RequestParam("file") MultipartFile file, HttpServletRequest req, HttpServletResponse res) throws Exception {
         String id = req.getAttribute("id").toString();
         return storesService.uploadPictureStore(id, file);
+    }
+
+    @GetMapping("/get-hash-menu-qrcode")
+    public HashDomain getHashMenuQrcode(@RequestParam("id") String idStore, @RequestParam("point") int point, HttpServletRequest req) {
+        String id = req.getAttribute("idAccount").toString();
+        System.out.println(id);
+        return storesService.getHashMenuQrcode(id, idStore, point);
     }
 
 
@@ -87,6 +115,10 @@ public class StoresController {
 
     @GetMapping("/delete")
     public void delete() {
-        storesService.deleteAll();
+        historyTransferRepo.deleteAll();
+        storeRepository.deleteAll();
+        memberRepo.deleteAll();
+        statisticsMenuRepository.deleteAll();
+        buyRepository.deleteAll();
     }
 }

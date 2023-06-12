@@ -24,6 +24,7 @@ public class RequestAuthorizationMiddleware implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, Object handler) throws IOException {
 
+
         String path = request.getRequestURI();
         if (path.endsWith("/login")) {
             return true;
@@ -46,6 +47,7 @@ public class RequestAuthorizationMiddleware implements HandlerInterceptor {
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found");
                 }
                 request.setAttribute("id", id);
+                request.setAttribute("idAccount",security.getIdToken(token));
                 return true;
             }
         }

@@ -2,15 +2,14 @@ package com.boot_camp.Boot_Camp.services;
 
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
-import com.boot_camp.Boot_Camp.repository.HistoryTransferRepository;
-import com.boot_camp.Boot_Camp.repository.MemberRepository;
-import com.boot_camp.Boot_Camp.repository.StoreRepository;
+import com.boot_camp.Boot_Camp.repository.*;
 import com.boot_camp.Boot_Camp.security.Security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -27,6 +26,12 @@ public class UtilService {
     private MemberRepository memberRepo;
     @Autowired
     private StoreRepository storeRepository;
+
+    @Autowired
+    private BuyMenuRepository buyRepository;
+
+    @Autowired
+    private StatisticsMenuRepository statisticsMenuRepository;
 
 
     public String searchDatabaseID(String id_member) {
@@ -49,12 +54,16 @@ public class UtilService {
         historyTransferRepo.saveAll(history);
     }
 
-//    @PostConstruct
+//   @PostConstruct
     public void delete() {
         historyTransferRepo.deleteAll();
         storeRepository.deleteAll();
         memberRepo.deleteAll();
+        statisticsMenuRepository.deleteAll();
+        buyRepository.deleteAll();
     }
+
+
 
 
     public int calculateAge(LocalDate birthday) {

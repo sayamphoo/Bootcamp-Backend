@@ -58,7 +58,7 @@ public class MemberController {
     @PutMapping("/transfer-point")
     public TransferPointDomain transferPoint(
             @RequestBody TransferPointWrapper transferPointWrapper,
-            HttpServletRequest request) throws Exception {
+            HttpServletRequest request) {
 
         String id = request.getAttribute("id").toString();
         if (id == null) {
@@ -69,11 +69,29 @@ public class MemberController {
         return membersService.transferPoint(transferPointWrapper);
     }
 
+    @PutMapping("/transfer-point-for-menu")
+    public UtilStoreDomain transferPointForMenu(
+            @RequestParam(name = "hash") String hash,
+            HttpServletRequest request) {
+
+        String id = request.getAttribute("id").toString();
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+        }
+
+        return membersService.transferPointForMenu(id, hash);
+    }
+
     @GetMapping("/get-history-transfer")
     public List<HistoryTransferDomain> getHistoryTransDomain(
             HttpServletRequest request) {
 
         String id = request.getAttribute("id").toString();
+
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+        }
+
         return membersService.getHistoryTransDomain(id);
     }
 
@@ -89,10 +107,22 @@ public class MemberController {
 
 
     @GetMapping("/get-personal-data")
-    public PersonalDataDomain getPersonalData(HttpServletRequest request)
-    {
+    public PersonalDataDomain getPersonalData(HttpServletRequest request) {
         String id = request.getAttribute("id").toString();
         return membersService.getPersonalData(id);
+    }
+
+    @GetMapping("/read-hash-transfer")
+    public ReadHashTransferDomain readHashTransfer(
+            @RequestParam("hash") String hash) {
+
+        return membersService.readHashTransfer(hash);
+    }
+
+    @DeleteMapping("delete-account")
+    public UtilStoreDomain deleteAccount(HttpServletRequest request) {
+        String id = request.getAttribute("id").toString();
+        return membersService.deleteAccount(id);
     }
 
 

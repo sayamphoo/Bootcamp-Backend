@@ -2,13 +2,17 @@ package com.boot_camp.Boot_Camp.services.members;
 
 import com.boot_camp.Boot_Camp.model.domain.PersonalDataDomain;
 import com.boot_camp.Boot_Camp.model.domain.*;
+import com.boot_camp.Boot_Camp.model.entity.BuyMenuEntity;
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
+import com.boot_camp.Boot_Camp.model.entity.StatisticsMenuEntity;
 import com.boot_camp.Boot_Camp.model.wrapper.MemberWrapper;
 import com.boot_camp.Boot_Camp.model.wrapper.ResetPasswordWrapper;
 import com.boot_camp.Boot_Camp.model.wrapper.TransferPointWrapper;
+import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
 import com.boot_camp.Boot_Camp.repository.HistoryTransferRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
+import com.boot_camp.Boot_Camp.repository.StatisticsMenuRepository;
 import com.boot_camp.Boot_Camp.security.Security;
 import com.boot_camp.Boot_Camp.services.UtilService;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -29,6 +33,12 @@ public class MembersService {
 
     @Autowired
     private MemberRepository memberRepo;
+
+    @Autowired
+    private BuyMenuRepository buyRepo;
+
+    @Autowired
+    private StatisticsMenuRepository staticRepo;
     @Autowired
     private HistoryTransferRepository historyTransferRepo;
     @Autowired
@@ -71,14 +81,14 @@ public class MembersService {
     //-------- Sign Up --------------
 
     public MemberDomain register(MemberWrapper w, HttpServletResponse response) {
-        MemberDomain memberDomain = new MemberDomain();
+        MemberDomain memberDomain;
         String name = w.getName();
         String birthday = w.getBirthday();
         String username = w.getUsername();
         String sex = w.getSex();
         String password = w.getPassword();
 
-        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || EmailValidator.getInstance().isValid(username)) {
+        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || !EmailValidator.getInstance().isValid(username)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Please provide valid input");
         }
@@ -94,7 +104,11 @@ public class MembersService {
         }
 
         MemberWrapper e = w.clone();
-        String idGenerate = String.format("%1d%08d", ((int) (Math.random() * 9) + 1), System.currentTimeMillis());
+        String idGenerate = String.format(
+                "%1d%s",
+                ((int) (Math.random() * 9) + 1),
+                String.format("%013d", System.currentTimeMillis()).substring(5));
+
         e.setIdAccount(idGenerate);
         e.setPassword(security.encodePassword(password));
         e.setStore(false);
@@ -107,12 +121,6 @@ public class MembersService {
         return memberDomain;
     }
 
-    private boolean validateEmail(String email) {
-        String pattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        Pattern regex = Pattern.compile(pattern);
-        Matcher matcher = regex.matcher(email);
-        return matcher.matches();
-    }
 
     public UtilStoreDomain resetPassword(ResetPasswordWrapper resetPasswordWrapper) {
         String id = resetPasswordWrapper.getId();
@@ -290,7 +298,6 @@ public class MembersService {
     }
 
 
-
 //    --------------------------------------------
 
 
@@ -303,4 +310,98 @@ public class MembersService {
     }
 
 
+    public UtilStoreDomain deleteAccount(String id) {
+        Optional<MemberEntity> optional = memberRepo.findById(id);
+        if (optional.isPresent()) {
+            MemberEntity entity = optional.get();
+            memberRepo.delete(entity);
+            return new UtilStoreDomain(HttpStatus.NO_CONTENT.value(), "Success");
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
+        }
+    }
+
+    public UtilStoreDomain transferPointForMenu(String id, String hash) {
+        Optional<BuyMenuEntity> optional = buyRepo.findById(hash);
+
+        if (optional.isPresent()) {
+            BuyMenuEntity entity = optional.get();
+            transferPoint(new TransferPointWrapper(entity.getIdAccount(), id, entity.getPoint()));
+
+            StatisticsMenuEntity staticEntity = new StatisticsMenuEntity();
+            staticEntity.setStoreId(entity.getStoreId());
+            staticEntity.setIdAccount(entity.getIdAccount());
+            staticEntity.setDateTime(LocalDateTime.now());
+            staticRepo.save(staticEntity);
+
+            return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Member not found.");
+        }
+    }
+
+    public ReadHashTransferDomain readHashTransfer(String hash) {
+        Optional<BuyMenuEntity> optional = buyRepo.findById(hash);
+
+        if (optional.isPresent()) {
+            BuyMenuEntity entity = optional.get();
+
+
+            if (!entity.getIsScan()) {
+                entity.setIsScan(true);
+                buyRepo.save(entity);
+
+                ReadHashTransferDomain domain = new ReadHashTransferDomain();
+                domain.setPayee(entity.getIdAccount());
+                domain.setNamePayee(validateTransferPointDomain(entity.getIdAccount()).getPayee());
+                domain.setPoint(entity.getPoint());
+
+                return domain;
+
+            } else {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Qr code Expire");
+            }
+
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Hash not found.");
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

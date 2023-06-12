@@ -51,5 +51,12 @@ public class MemberEntity {
 
     @Field(type = FieldType.Integer, name = "point")
     private int point;
+
+
+    public void setToEmpty() {
+        username = "";
+        password = "";
+        store = false;
+    }
 }
 

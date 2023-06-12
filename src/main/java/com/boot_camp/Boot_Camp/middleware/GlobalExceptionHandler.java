@@ -10,6 +10,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<UtilStoreDomain> responseException(ResponseStatusException e) {
-        return ResponseEntity.status(e.getStatus()).body(new UtilStoreDomain(e.getStatus().value(),e.getMessage()));
+        String errorMessage = e.getMessage();
+        int errorCode = e.getStatus().value();
+
+        assert errorMessage != null;
+        if (errorMessage.startsWith(errorCode + " ")) {
+            errorMessage = errorMessage.substring((errorCode + " ").length());
+        }
+
+        return ResponseEntity.status(e.getStatus()).body(new UtilStoreDomain(errorCode, errorMessage));
     }
 }

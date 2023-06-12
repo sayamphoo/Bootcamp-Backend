@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 @Setter
 @Getter
 public class ValidateTransferPointDomain{
-    private boolean state =false;
     private String payee = "";
     private String message = "";
 

@@ -9,4 +9,11 @@ public class TransferPointWrapper {
     private String originID;
     private String payee;
     private int point;
+
+    public TransferPointWrapper() {}
+    public TransferPointWrapper(String originID,String payee,int point) {
+        this.originID = originID;
+        this.payee = payee;
+        this.point = point;
+    }
 }
