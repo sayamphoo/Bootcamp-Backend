@@ -7,10 +7,9 @@ import com.boot_camp.Boot_Camp.model.domain.MenuStoreDomain;
 import com.boot_camp.Boot_Camp.model.entity.StoreMenuEntity;
 import com.boot_camp.Boot_Camp.repository.*;
 import com.boot_camp.Boot_Camp.services.UtilService;
-import com.boot_camp.Boot_Camp.services.members.MembersService;
-import com.boot_camp.Boot_Camp.services.stroes.StoresService;
+import com.boot_camp.Boot_Camp.services.MembersService;
+import com.boot_camp.Boot_Camp.services.StoresService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -113,12 +112,4 @@ public class StoresController {
         return storesService.getAll();
     }
 
-    @GetMapping("/delete")
-    public void delete() {
-        historyTransferRepo.deleteAll();
-        storeRepository.deleteAll();
-        memberRepo.deleteAll();
-        statisticsMenuRepository.deleteAll();
-        buyRepository.deleteAll();
-    }
 }

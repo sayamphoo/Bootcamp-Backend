@@ -1,4 +1,4 @@
-package com.boot_camp.Boot_Camp.services.stroes;
+package com.boot_camp.Boot_Camp.services;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +11,6 @@ import com.boot_camp.Boot_Camp.model.entity.BuyMenuEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
 import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
-import com.boot_camp.Boot_Camp.services.UtilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.boot_camp.Boot_Camp.model.entity.StoreMenuEntity;
 import com.boot_camp.Boot_Camp.repository.StoreRepository;
 import com.boot_camp.Boot_Camp.security.Security;
-import com.boot_camp.Boot_Camp.services.members.MembersService;
 import com.boot_camp.Boot_Camp.storages.ImageStorage;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -58,16 +56,14 @@ public class StoresService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Request");
         }
 
-        String pictureUrls = "";
-        for (MultipartFile file : files) {
-            String fileName = String.format("%s.png", (System.currentTimeMillis()));
-            Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            pictureUrls = fileName;
-        }
+        String RESET_IMAGE_NAME = String.valueOf(((int)System.currentTimeMillis() * (int)(Math.random() * 9.0 + 1.0)));
+
+        String fileName = String.format("%s.png",RESET_IMAGE_NAME);
+        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
+        Files.copy(files.get(0).getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
         StoreMenuEntity storeMenuEntity = new StoreMenuEntity(
-                id, name, price, exchange, receive, pictureUrls, category
+                id, name, price, exchange, receive, fileName, category
         );
 
         storeRepository.save(storeMenuEntity);
@@ -89,7 +85,8 @@ public class StoresService {
             List<MenuStore> menuItems = new ArrayList<>();
 
             for (StoreMenuEntity storeMenuEntity : detailMenuOptional) {
-                menuItems.add(new MenuStore(
+                menuItems.add(
+                        new MenuStore(
                                 storeMenuEntity.getId(),
                                 storeMenuEntity.getNameMenu(),
                                 storeMenuEntity.getPrice(),
@@ -133,11 +130,6 @@ public class StoresService {
         }
     }
 
-
-    public void deleteAll() {
-        storeRepository.deleteAll();
-    }
-
     public UtilStoreDomain uploadPictureStore(String id, MultipartFile files) throws IOException {
         if (files == null || files.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payload is Empty or Null");
@@ -158,16 +150,17 @@ public class StoresService {
         }
     }
 
-
     public Set<AllStoresDomain> getMenuCategory(int category) {
 
         Set<AllStoresDomain> list = new HashSet<>();
-        List<StoreMenuEntity> idAccounts = storeRepository.findDistinctIdAccountByCategory(category);
+        List<StoreMenuEntity> idAccounts = storeRepository.findByCategory(category);
 
         if (idAccounts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "");
         }
+
         MemberEntity e;
+
         for (StoreMenuEntity storeMenuEntity : idAccounts) {
             e = memberRepository.findById(storeMenuEntity.getIdAccount()).get();
             list.add(
@@ -177,18 +170,6 @@ public class StoresService {
                     )
             );
         }
-
-
-//        if (idAccounts.isEmpty()) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "");
-//        }
-//
-//        Map<String, String> nameStore = memberRepository.findNameAndIdAccountByIdAccount(idAccounts);
-//
-//        for (Map.Entry<String, String> entry : nameStore.entrySet()) {
-//            list.add(new AllStoresDomain(entry.getValue(), entry.getValue()));
-//        }
-
         return list;
     }
 
@@ -196,7 +177,6 @@ public class StoresService {
         StoreMenuEntity entity = storeRepository.findById(idMenu).get();
         storeRepository.delete(entity);
         return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
-
     }
 
 

@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 
 @Component
 public class ComponentService {
-    public LocalDate coverStrToLocaltime(String time) {
+    public static LocalDate coverStrToLocaltime(String time) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return LocalDate.parse(time, formatter);
     }

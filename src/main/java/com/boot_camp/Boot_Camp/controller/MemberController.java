@@ -2,11 +2,9 @@ package com.boot_camp.Boot_Camp.controller;
 
 import com.boot_camp.Boot_Camp.model.domain.*;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
-import com.boot_camp.Boot_Camp.model.wrapper.MemberWrapper;
-import com.boot_camp.Boot_Camp.model.wrapper.ResetPasswordWrapper;
-import com.boot_camp.Boot_Camp.model.wrapper.TransferPointWrapper;
+import com.boot_camp.Boot_Camp.model.wrapper.*;
 import com.boot_camp.Boot_Camp.services.UtilService;
-import com.boot_camp.Boot_Camp.services.members.MembersService;
+import com.boot_camp.Boot_Camp.services.MembersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -119,18 +117,18 @@ public class MemberController {
         return membersService.readHashTransfer(hash);
     }
 
-    @DeleteMapping("delete-account")
+    @DeleteMapping("/delete-account")
     public UtilStoreDomain deleteAccount(HttpServletRequest request) {
         String id = request.getAttribute("id").toString();
         return membersService.deleteAccount(id);
     }
 
-
-    @GetMapping("/delete")
-    public void delete() {
-
-        membersService.delete();
+    @PostMapping("/edit-personal-data")
+    public UtilStoreDomain editPersonalData(@RequestBody EditPersonalWrapper wrapper, HttpServletRequest res) {
+        String id = res.getAttribute("id").toString();
+        return membersService.editPersonalData(id, wrapper);
     }
+
 
     @GetMapping("/show")
     public Iterable<MemberEntity> show() {
@@ -138,9 +136,14 @@ public class MemberController {
         return membersService.showDatabase();
     }
 
-//    @GetMapping(path = "generate-qr", produces = MediaType.IMAGE_PNG_VALUE)
-//    public BufferedImage generateQrcode(HttpServletRequest request) {
-//        return membersService.generateQrcode(request.getHeader("verify"));
-//    }
+    @PutMapping("/forgot-password")
+    public UtilStoreDomain forgotPassword(
+            @RequestBody ForgotPasswordWrapper wrapper ) {
+
+        System.out.println(wrapper.getBirthday());
+
+        return membersService.forgotPassword(wrapper);
+
+    }
 
 }

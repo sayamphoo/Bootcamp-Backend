@@ -1,5 +1,6 @@
 package com.boot_camp.Boot_Camp.model.entity;
 
+import com.boot_camp.Boot_Camp.model.wrapper.EditPersonalWrapper;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
@@ -52,11 +53,13 @@ public class MemberEntity {
     @Field(type = FieldType.Integer, name = "point")
     private int point;
 
+    public MemberEntity() {}
 
-    public void setToEmpty() {
-        username = "";
-        password = "";
-        store = false;
+    public void editPersonal(EditPersonalWrapper wrapper) {
+        this.name = wrapper.getName();
+        this.username = wrapper.getUsername();
+        this.birthday = wrapper.getBirthday();
+        this.sex = wrapper.getSex();
     }
 }
 

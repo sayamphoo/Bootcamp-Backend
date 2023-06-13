@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -53,18 +52,6 @@ public class UtilService {
     public void transferSaveHistory(List<HistoryTransferEntity> history) {
         historyTransferRepo.saveAll(history);
     }
-
-//   @PostConstruct
-    public void delete() {
-        historyTransferRepo.deleteAll();
-        storeRepository.deleteAll();
-        memberRepo.deleteAll();
-        statisticsMenuRepository.deleteAll();
-        buyRepository.deleteAll();
-    }
-
-
-
 
     public int calculateAge(LocalDate birthday) {
         return Period.between(birthday,LocalDate.now()).getYears();

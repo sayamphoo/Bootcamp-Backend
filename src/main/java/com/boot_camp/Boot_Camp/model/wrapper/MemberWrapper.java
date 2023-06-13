@@ -38,7 +38,7 @@ public class MemberWrapper implements Cloneable {
         e.setName(this.name);
         e.setUsername(this.username);
         e.setPassword(this.password);
-        e.setBirthday(new ComponentService().coverStrToLocaltime(this.birthday));
+        e.setBirthday(ComponentService.coverStrToLocaltime(this.birthday));
         e.setStore(this.store);
         e.setSex(this.sex);
         e.setPoint(this.point);

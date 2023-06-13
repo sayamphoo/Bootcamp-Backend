@@ -1,4 +1,4 @@
-package com.boot_camp.Boot_Camp.services.members;
+package com.boot_camp.Boot_Camp.services;
 
 import com.boot_camp.Boot_Camp.model.domain.PersonalDataDomain;
 import com.boot_camp.Boot_Camp.model.domain.*;
@@ -6,9 +6,7 @@ import com.boot_camp.Boot_Camp.model.entity.BuyMenuEntity;
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
 import com.boot_camp.Boot_Camp.model.entity.StatisticsMenuEntity;
-import com.boot_camp.Boot_Camp.model.wrapper.MemberWrapper;
-import com.boot_camp.Boot_Camp.model.wrapper.ResetPasswordWrapper;
-import com.boot_camp.Boot_Camp.model.wrapper.TransferPointWrapper;
+import com.boot_camp.Boot_Camp.model.wrapper.*;
 import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
 import com.boot_camp.Boot_Camp.repository.HistoryTransferRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
@@ -18,10 +16,12 @@ import com.boot_camp.Boot_Camp.services.UtilService;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -326,7 +326,12 @@ public class MembersService {
 
         if (optional.isPresent()) {
             BuyMenuEntity entity = optional.get();
-            transferPoint(new TransferPointWrapper(entity.getIdAccount(), id, entity.getPoint()));
+            transferPoint(
+                    new TransferPointWrapper(
+                            entity.getIdAccount(),
+                            id,
+                            entity.getPoint())
+            );
 
             StatisticsMenuEntity staticEntity = new StatisticsMenuEntity();
             staticEntity.setStoreId(entity.getStoreId());
@@ -368,6 +373,39 @@ public class MembersService {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Hash not found.");
+        }
+    }
+
+    public UtilStoreDomain editPersonalData(String id, EditPersonalWrapper wrapper) {
+        Optional<MemberEntity> optional = memberRepo.findById(id);
+        if (optional.isPresent()) {
+            MemberEntity entity = optional.get();
+            entity.editPersonal(wrapper);
+            memberRepo.save(entity);
+
+            return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
+        }
+    }
+
+    public UtilStoreDomain forgotPassword(ForgotPasswordWrapper wrapper) {
+        LocalDate date = ComponentService.coverStrToLocaltime(wrapper.getBirthday());
+
+        System.out.println(date);
+
+        Optional<MemberEntity> optional = memberRepo.findByUsernameAndBirthday(
+                wrapper.getUsername(),
+                date);
+
+        if (optional.isPresent()) {
+            MemberEntity entity = optional.get();
+            entity.setPassword(new Security().encodePassword(wrapper.getNewPassword()));
+            memberRepo.save(entity);
+
+            return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+        } else  {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"");
         }
     }
 }
