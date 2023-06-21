@@ -22,9 +22,6 @@ public class MemberEntity {
     @ReadOnlyProperty
     private String id;
 
-    @Field(type = FieldType.Text, name = "idAccount")
-    private String idAccount;
-
     @Field(type = FieldType.Text, name = "name")
     private String name;
 
@@ -53,13 +50,15 @@ public class MemberEntity {
     @Field(type = FieldType.Integer, name = "point")
     private int point;
 
-    public MemberEntity() {}
+    @Field(type = FieldType.Boolean,name = "isActive")
+    private boolean isActive;
 
     public void editPersonal(EditPersonalWrapper wrapper) {
         this.name = wrapper.getName();
         this.username = wrapper.getUsername();
         this.birthday = wrapper.getBirthday();
         this.sex = wrapper.getSex();
+        this.isActive = true;
     }
 }
 

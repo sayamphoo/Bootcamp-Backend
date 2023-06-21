@@ -17,8 +17,8 @@ public class StoreMenuEntity {
     @ReadOnlyProperty
     private String id;
 
-    @Field(type = FieldType.Text, name = "idAccount")
-    private String idAccount;
+    @Field(type = FieldType.Text, name = "accountId")
+    private String accountId;
 
     @Field(type = FieldType.Text, name = "nameMenu")
     private String nameMenu;
@@ -38,16 +38,20 @@ public class StoreMenuEntity {
     @Field(type = FieldType.Integer, name = "category")
     private int category;
 
+    @Field(type = FieldType.Boolean,name = "isActive")
+    private boolean isActive;
+
     public StoreMenuEntity() {
     }
 
     public StoreMenuEntity(String memberId, String nameMenu, int price, int exchange, int receive, String pictures,int category) {
-        this.idAccount = memberId;
+        this.accountId = memberId;
         this.nameMenu = nameMenu;
         this.pictures = pictures;
         this.price = price;
         this.receive = receive;
         this.exchange = exchange;
         this.category = category;
+        this.isActive = true;
     }
 }

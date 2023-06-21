@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface HistoryTransferRepository extends ElasticsearchRepository<HistoryTransferEntity,String> {
-    List<HistoryTransferEntity> findByIdAccount(String id);
+    List<HistoryTransferEntity> findByAccountId(String id);
 }
+

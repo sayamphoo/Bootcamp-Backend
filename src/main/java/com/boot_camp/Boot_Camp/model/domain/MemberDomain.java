@@ -9,10 +9,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @Setter
 public class MemberDomain {
-    private int code = HttpStatus.NOT_FOUND.value();
     private String message;
     private boolean store;
     private String accessToken = "";
-    private String idAccount;
+    private String accountId;
 
 }

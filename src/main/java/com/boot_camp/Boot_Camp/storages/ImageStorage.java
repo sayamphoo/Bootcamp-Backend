@@ -24,7 +24,6 @@ public class ImageStorage {
             Files.createDirectories(imageDirectory);
         }
     }
-
     public Path getImageDirectory() {
         return imageDirectory;
     }

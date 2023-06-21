@@ -13,8 +13,6 @@ import java.time.LocalDate;
 public class EditPersonalWrapper {
     private String name;
     private String username;
-
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC")
     private LocalDate birthday;
     private String sex;
 }

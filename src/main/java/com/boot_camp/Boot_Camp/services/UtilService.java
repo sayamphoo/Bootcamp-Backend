@@ -1,7 +1,8 @@
 package com.boot_camp.Boot_Camp.services;
 
+import com.boot_camp.Boot_Camp.enums.CategoryLockerId;
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
-import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
+import com.boot_camp.Boot_Camp.model.entity.LockerIdEntity;
 import com.boot_camp.Boot_Camp.repository.*;
 import com.boot_camp.Boot_Camp.security.Security;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -26,27 +28,20 @@ public class UtilService {
     @Autowired
     private StoreRepository storeRepository;
 
-    @Autowired
-    private BuyMenuRepository buyRepository;
 
     @Autowired
     private StatisticsMenuRepository statisticsMenuRepository;
 
+    @Autowired
+    private LockerIdRepository idLockerRepo;
 
-    public String searchDatabaseID(String id_member) {
-        MemberEntity memberEntity = memberRepo.findByIdAccount(id_member);
-        if (memberEntity == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,HttpStatus.NOT_FOUND.getReasonPhrase());
-        }
-        return memberEntity.getId();
+    public void checkActive(boolean active) {
+        if (!active) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"This Username is already taken");
     }
 
-    public String searchDatabaseName(String id_member) {
-        MemberEntity memberEntity = memberRepo.findByIdAccount(id_member);
-        if (memberEntity == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,HttpStatus.NOT_FOUND.getReasonPhrase());
-        }
-        return memberEntity.getName();
+    public  LocalDate coverStrToLocaltime(String time) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return LocalDate.parse(time, formatter);
     }
 
     public void transferSaveHistory(List<HistoryTransferEntity> history) {
@@ -54,6 +49,30 @@ public class UtilService {
     }
 
     public int calculateAge(LocalDate birthday) {
-        return Period.between(birthday,LocalDate.now()).getYears();
+        return Period.between(birthday, LocalDate.now()).getYears();
+    }
+
+    public void saveLocker(String category,String idRecord) {
+        LockerIdEntity entity = new LockerIdEntity(idRecord);
+        entity.setIdLocker(security.buildIdLocker(category));
+        idLockerRepo.save(entity);
+    }
+
+    public String getIdRecord(String idLocker) {
+        LockerIdEntity entity = idLockerRepo.findIdRecordByIdLocker(idLocker);
+        if (entity != null) {
+            return entity.getIdRecord();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found");
+        }
+    }
+
+    public String getIdLocker(String idRecord) {
+        LockerIdEntity entity = idLockerRepo.findIdLockerByIdRecord(idRecord);
+        if (entity != null) {
+            return entity.getIdLocker();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found");
+        }
     }
 }

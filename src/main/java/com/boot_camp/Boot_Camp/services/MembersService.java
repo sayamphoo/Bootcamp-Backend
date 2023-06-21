@@ -1,42 +1,29 @@
 package com.boot_camp.Boot_Camp.services;
 
+import com.boot_camp.Boot_Camp.enums.CategoryLockerId;
 import com.boot_camp.Boot_Camp.model.domain.PersonalDataDomain;
 import com.boot_camp.Boot_Camp.model.domain.*;
-import com.boot_camp.Boot_Camp.model.entity.BuyMenuEntity;
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
-import com.boot_camp.Boot_Camp.model.entity.StatisticsMenuEntity;
 import com.boot_camp.Boot_Camp.model.wrapper.*;
-import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
 import com.boot_camp.Boot_Camp.repository.HistoryTransferRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import com.boot_camp.Boot_Camp.repository.StatisticsMenuRepository;
+import com.boot_camp.Boot_Camp.security.EmailValidator;
 import com.boot_camp.Boot_Camp.security.Security;
-import com.boot_camp.Boot_Camp.services.UtilService;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class MembersService {
 
     @Autowired
     private MemberRepository memberRepo;
-
-    @Autowired
-    private BuyMenuRepository buyRepo;
-
     @Autowired
     private StatisticsMenuRepository staticRepo;
     @Autowired
@@ -52,22 +39,24 @@ public class MembersService {
     public MemberDomain login(MemberWrapper w) {
         MemberDomain memberDomain = new MemberDomain();
 
-        if (w == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Invalid login credentials.");
+        if (!EmailValidator.isValidEmail(w.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Bad request");
         }
 
-        MemberEntity entity = getMemberUsername(w.getUsername());
+        MemberEntity entity = memberRepo.findByUsername(w.getUsername());
+        utilService.checkActive(entity.isActive());
 
-        if (entity != null && security.comparePasswords(w.getPassword(), entity.getPassword())) {
+        if (security.comparePasswords(w.getPassword(), entity.getPassword())) {
+
             Map<String, Object> claims = new HashMap<>();
-            claims.put("id", entity.getIdAccount());
+            String idLocker = utilService.getIdLocker(entity.getId());
+            claims.put("id", idLocker);
             claims.put("isStore", entity.isStore());
             String token = security.generateToken(claims);
 
-            memberDomain.setCode(HttpStatus.OK.value());
             memberDomain.setAccessToken(token);
-            memberDomain.setIdAccount(entity.getIdAccount());
+            memberDomain.setAccountId(idLocker);
             memberDomain.setStore(entity.isStore());
 
             return memberDomain;
@@ -77,64 +66,64 @@ public class MembersService {
         }
     }
 
-
     //-------- Sign Up --------------
 
-    public MemberDomain register(MemberWrapper w, HttpServletResponse response) {
-        MemberDomain memberDomain;
+    public MemberDomain register(MemberWrapper w) {
+
         String name = w.getName();
         String birthday = w.getBirthday();
         String username = w.getUsername();
         String sex = w.getSex();
         String password = w.getPassword();
 
-        if (name.isEmpty() || birthday.isEmpty() || username.length() < 6 || sex.isEmpty() || password.length() < 8 || !EmailValidator.getInstance().isValid(username)) {
+        if (name.isEmpty()
+                || birthday.isEmpty()
+                || username.length() < 6
+                || sex.isEmpty()
+                || password.length() < 8
+                || !EmailValidator.isValidEmail(username)) {
+
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Please provide valid input");
         }
 
-        if (getMemberUsername(username) != null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "This Email is already taken");
-        }
-
-        if (getMemberName(name) != null) {
+        if (memberRepo.findByUsername(username) != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "This Username is already taken");
         }
 
-        MemberWrapper e = w.clone();
-        String idGenerate = String.format(
-                "%1d%s",
-                ((int) (Math.random() * 9) + 1),
-                String.format("%013d", System.currentTimeMillis()).substring(5));
+        if (memberRepo.findByName(name) != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This Name is already taken");
+        }
 
-        e.setIdAccount(idGenerate);
-        e.setPassword(security.encodePassword(password));
-        e.setStore(false);
-        e.setPoint(3000);
-        memberRepo.save(e.toEntity());
+        MemberEntity entity = w.clone().toEntity();
+        entity.setPassword(security.hashPassword(password));
+        entity.setPoint(3000);
+        entity.setActive(true);
+        entity.setStore(false);
+        memberRepo.save(entity);
+        utilService.saveLocker(CategoryLockerId.Account.getSubId(),entity.getId());
 
         // Login after register
-        memberDomain = this.login(w);
-
-        return memberDomain;
+        return this.login(w);
     }
 
-
-    public UtilStoreDomain resetPassword(ResetPasswordWrapper resetPasswordWrapper) {
+    public UtilDomain resetPassword(ResetPasswordWrapper resetPasswordWrapper) {
         String id = resetPasswordWrapper.getId();
         String oldPassword = resetPasswordWrapper.getOldPassword();
         String newPassword = resetPasswordWrapper.getNewPassword();
-
         Optional<MemberEntity> memberOpt = memberRepo.findById(id);
+
         if (memberOpt.isPresent()) {
             MemberEntity entity = memberOpt.get();
+            utilService.checkActive(entity.isActive());
+
             if (security.comparePasswords(oldPassword, entity.getPassword())) {
-                entity.setPassword(security.encodePassword(newPassword));
+                entity.setPassword(security.hashPassword(newPassword));
                 memberRepo.save(entity);
 
-                return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+                return new UtilDomain(HttpStatus.OK.value(), "Success");
             } else {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "Incorrect old password.");
@@ -145,15 +134,6 @@ public class MembersService {
         }
     }
 
-    //    ตรวจสอบว่ามีสามาชิกอยู่แล้วหรือไม่ด้วย username------------------------ห
-    private MemberEntity getMemberUsername(String username) {
-        return memberRepo.findByUsername(username);
-    }
-
-    private MemberEntity getMemberName(String name) {
-        return memberRepo.findByName(name);
-    }
-
 
     //    getPoint -----------------------
     public PointDomain getPoint(String id) {
@@ -161,9 +141,9 @@ public class MembersService {
         Optional<MemberEntity> optional = memberRepo.findById(id);
         if (optional.isPresent()) {
             MemberEntity entity = optional.get();
-            point.setCode(HttpStatus.OK.value());
+            utilService.checkActive(entity.isActive());
             point.setPoint(entity.getPoint());
-            point.setId(entity.getIdAccount());
+            point.setId(utilService.getIdLocker(entity.getId()));
             point.setName(entity.getName());
             return point;
         } else {
@@ -174,84 +154,18 @@ public class MembersService {
 
     }
 
-    public ValidateTransferPointDomain validateTransferPointDomain(String idPayee) {
-        MemberEntity memberEntity = memberRepo.findByIdAccount(idPayee);
-        if (memberEntity == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Member Not Found");
-        }
-        return new ValidateTransferPointDomain(memberEntity);
-    }
 
     //    transferPoint
-    public TransferPointDomain transferPoint(TransferPointWrapper transferPointWrapper) {
-        TransferPointDomain transferPointDomain = new TransferPointDomain();
-
-        String originID = transferPointWrapper.getOriginID();
-        String payeeID = transferPointWrapper.getPayee();
-
-        System.out.println(originID + " | " + payeeID);
-        int point = transferPointWrapper.getPoint();
-
-        Optional<MemberEntity> originMemberOpt = memberRepo.findById(originID);
-        MemberEntity payeeMember = memberRepo.findByIdAccount(payeeID);
-
-        if (originMemberOpt.isPresent() && payeeMember != null) {
-            MemberEntity originMember = originMemberOpt.get();
-
-            if (point <= 0) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "point incorrect");
-            } else if (point > originMember.getPoint()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "not enough point");
-            }
-
-            originMember.setPoint(originMember.getPoint() - point);
-            payeeMember.setPoint(payeeMember.getPoint() + point);
-            memberRepo.saveAll(Arrays.asList(originMember, payeeMember));
-
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-            String formattedDate = now.format(formatter);
-
-            HistoryTransferEntity historyOrigin = new HistoryTransferEntity();
-            HistoryTransferEntity historyPayee = new HistoryTransferEntity();
-
-            historyOrigin.setIdAccount(originID);
-            historyOrigin.setDate(formattedDate);
-            historyOrigin.setState("withdrawal");
-            historyOrigin.setPoint(-point);
-            historyOrigin.setOpposite(payeeMember.getIdAccount());
-
-            historyPayee.setIdAccount(payeeMember.getId());
-            historyPayee.setDate(formattedDate);
-            historyPayee.setState("deposit");
-            historyPayee.setOpposite(originMember.getIdAccount());
-            historyPayee.setPoint(point);
-
-            utilService.transferSaveHistory(Arrays.asList(historyOrigin, historyPayee));
-
-            transferPointDomain.setCode(HttpStatus.OK.value());
-            transferPointDomain.setState("withdrawal");
-            transferPointDomain.setPoint(point);
-            transferPointDomain.setDate(formattedDate);
-            transferPointDomain.setPayee(payeeID);
-            transferPointDomain.setMessage(HttpStatus.OK.getReasonPhrase());
-            transferPointDomain.setBalance(originMember.getPoint());
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
-        }
-        return transferPointDomain;
-    }
 
     public List<HistoryTransferDomain> getHistoryTransDomain(String id) {
-        List<HistoryTransferEntity> entity = historyTransferRepo.findByIdAccount(id);
+        List<HistoryTransferEntity> entity = historyTransferRepo.findByAccountId(id);
         List<HistoryTransferDomain> domain = new ArrayList<>();
 
-        if (entity == null || entity.isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "History not found.");
-        }
+//        if (entity == null || entity.isEmpty()) {
+//            throw new ResponseStatusException(
+//                    HttpStatus.NOT_FOUND,
+//                    "History not found.");
+//        }
 
         for (HistoryTransferEntity e : entity) {
             domain.add(new HistoryTransferDomain(e));
@@ -272,6 +186,7 @@ public class MembersService {
         }
 
         for (MemberEntity e : entity) {
+            if (!e.isActive()) continue;
             domain.add(new AllStoresDomain(e));
         }
 
@@ -283,6 +198,7 @@ public class MembersService {
         Optional<MemberEntity> optional = memberRepo.findById(id);
         if (optional.isPresent()) {
             MemberEntity entity = optional.get();
+            utilService.checkActive(entity.isActive());
             domain.setName(entity.getName());
             domain.setUsername(entity.getUsername());
             domain.setBirthday(entity.getBirthday().toString());
@@ -300,97 +216,28 @@ public class MembersService {
 
 //    --------------------------------------------
 
-
-    public void delete() {
-        memberRepo.deleteAll();
-    }
-
     public Iterable<MemberEntity> showDatabase() {
         return memberRepo.findAll();
     }
 
 
-    public UtilStoreDomain deleteAccount(String id) {
+    public UtilDomain editPersonalData(String id, EditPersonalWrapper wrapper) {
         Optional<MemberEntity> optional = memberRepo.findById(id);
         if (optional.isPresent()) {
             MemberEntity entity = optional.get();
-            memberRepo.delete(entity);
-            return new UtilStoreDomain(HttpStatus.NO_CONTENT.value(), "Success");
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
-        }
-    }
+            utilService.checkActive(entity.isActive());
 
-    public UtilStoreDomain transferPointForMenu(String id, String hash) {
-        Optional<BuyMenuEntity> optional = buyRepo.findById(hash);
-
-        if (optional.isPresent()) {
-            BuyMenuEntity entity = optional.get();
-            transferPoint(
-                    new TransferPointWrapper(
-                            entity.getIdAccount(),
-                            id,
-                            entity.getPoint())
-            );
-
-            StatisticsMenuEntity staticEntity = new StatisticsMenuEntity();
-            staticEntity.setStoreId(entity.getStoreId());
-            staticEntity.setIdAccount(entity.getIdAccount());
-            staticEntity.setDateTime(LocalDateTime.now());
-            staticRepo.save(staticEntity);
-
-            return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
-        } else {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Member not found.");
-        }
-    }
-
-    public ReadHashTransferDomain readHashTransfer(String hash) {
-        Optional<BuyMenuEntity> optional = buyRepo.findById(hash);
-
-        if (optional.isPresent()) {
-            BuyMenuEntity entity = optional.get();
-
-
-            if (!entity.getIsScan()) {
-                entity.setIsScan(true);
-                buyRepo.save(entity);
-
-                ReadHashTransferDomain domain = new ReadHashTransferDomain();
-                domain.setPayee(entity.getIdAccount());
-                domain.setNamePayee(validateTransferPointDomain(entity.getIdAccount()).getPayee());
-                domain.setPoint(entity.getPoint());
-
-                return domain;
-
-            } else {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Qr code Expire");
-            }
-
-        } else {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Hash not found.");
-        }
-    }
-
-    public UtilStoreDomain editPersonalData(String id, EditPersonalWrapper wrapper) {
-        Optional<MemberEntity> optional = memberRepo.findById(id);
-        if (optional.isPresent()) {
-            MemberEntity entity = optional.get();
             entity.editPersonal(wrapper);
             memberRepo.save(entity);
 
-            return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+            return new UtilDomain(HttpStatus.OK.value(), "Success");
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
         }
     }
 
-    public UtilStoreDomain forgotPassword(ForgotPasswordWrapper wrapper) {
-        LocalDate date = ComponentService.coverStrToLocaltime(wrapper.getBirthday());
+    public UtilDomain forgotPassword(ForgotPasswordWrapper wrapper) {
+        LocalDate date = utilService.coverStrToLocaltime(wrapper.getBirthday());
 
         System.out.println(date);
 
@@ -400,12 +247,14 @@ public class MembersService {
 
         if (optional.isPresent()) {
             MemberEntity entity = optional.get();
-            entity.setPassword(new Security().encodePassword(wrapper.getNewPassword()));
+            utilService.checkActive(entity.isActive());
+
+            entity.setPassword(new Security().hashPassword(wrapper.getNewPassword()));
             memberRepo.save(entity);
 
-            return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
-        } else  {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"");
+            return new UtilDomain(HttpStatus.OK.value(), "Success");
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
         }
     }
 }

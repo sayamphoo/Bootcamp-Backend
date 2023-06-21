@@ -8,9 +8,9 @@ import java.util.List;
 
 @Repository
 public interface StoreRepository extends ElasticsearchRepository<StoreMenuEntity, String> {
-    List<StoreMenuEntity> findByIdAccount(String s);
+    List<StoreMenuEntity> findByAccountId(String s);
     List<StoreMenuEntity> findByCategory(int category);
 
 
-    StoreMenuEntity findByIdAndIdAccount(String idMenu, String id);
 }
+

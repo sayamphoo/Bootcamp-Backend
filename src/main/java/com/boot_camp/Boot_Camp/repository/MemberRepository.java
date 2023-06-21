@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface MemberRepository extends ElasticsearchRepository<MemberEntity, String> {
     MemberEntity findByUsername(String username);
     MemberEntity findByName(String name);
-    MemberEntity findByIdAccount(String id);
+
     List<MemberEntity> findByStore(boolean store);
 
     Optional<MemberEntity> findByUsernameAndBirthday(String username, LocalDate birthday);

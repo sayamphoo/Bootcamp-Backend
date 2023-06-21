@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 @Getter
 @Setter
 public class PointDomain {
-    private int code = HttpStatus.NO_CONTENT.value();
     private String name;
     private String id;
     private int point = -1;

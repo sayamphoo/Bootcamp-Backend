@@ -8,7 +8,6 @@ import java.util.Date;
 @Getter
 @Setter
 public class TransferPointDomain {
-    private int code;
     private String message;
     private String state; // withdrawal and deposit
     private String date;

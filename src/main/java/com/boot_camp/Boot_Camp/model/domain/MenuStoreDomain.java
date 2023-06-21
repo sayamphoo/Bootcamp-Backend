@@ -9,14 +9,14 @@ import java.util.List;
 public class MenuStoreDomain {
     private String id;
     private String storePicture;
-    private List<MenuStore> menuStores;
+    private List<MenuStoreSubdomain> menuStoreSubdomains;
 
     public MenuStoreDomain() {}
 
-    public MenuStoreDomain(String id,String storePicture, List<MenuStore> list) {
+    public MenuStoreDomain(String id,String storePicture, List<MenuStoreSubdomain> list) {
         this.id = id;
         this.storePicture = storePicture;
-        this.menuStores = list;
+        this.menuStoreSubdomains = list;
     }
 }
 

@@ -49,8 +49,4 @@ public class JwtTokenProvider {
         return ob.toString();
     }
 
-    public String getPositionToken(String token) {
-        Object ob = readToken(token).get("position");
-        return ob.toString();
-    }
 }

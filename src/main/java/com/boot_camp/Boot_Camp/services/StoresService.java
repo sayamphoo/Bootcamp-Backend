@@ -1,15 +1,11 @@
 package com.boot_camp.Boot_Camp.services;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+import com.boot_camp.Boot_Camp.enums.CategoryLockerId;
 import com.boot_camp.Boot_Camp.model.domain.*;
-import com.boot_camp.Boot_Camp.model.entity.BuyMenuEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
-import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,41 +30,48 @@ public class StoresService {
     private MemberRepository memberRepository;
 
     @Autowired
-    private BuyMenuRepository buyRepo;
-
-    @Autowired
     private MembersService membersService;
 
     @Autowired
     private UtilService utilService;
 
     @Autowired
+    SaveFileService saveFileService;
+
+    @Autowired
     private Security security;
 
     //upload menu images
-    public UtilStoreDomain uploadMenu(
-            String id, String name,
-            int price, int exchange,
-            int receive, List<MultipartFile> files,
-            int category) throws Exception {
+    public UtilDomain uploadMenu(
+            String id,
+            String name,
+            int price,
+            int exchange,
+            int receive,
+            MultipartFile files,
+            int category
+
+    ) throws Exception {
 
         if (files == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Request");
         }
 
-        String RESET_IMAGE_NAME = String.valueOf(((int)System.currentTimeMillis() * (int)(Math.random() * 9.0 + 1.0)));
+        String RESET_IMAGE_NAME = String.valueOf(((int) System.currentTimeMillis() * (int) (Math.random() * 9.0 + 1.0)));
 
-        String fileName = String.format("%s.png",RESET_IMAGE_NAME);
-        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
-        Files.copy(files.get(0).getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+        String fileName = String.format("%s.png", RESET_IMAGE_NAME);
+//        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
+//        Files.copy(files.get(0).getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
         StoreMenuEntity storeMenuEntity = new StoreMenuEntity(
                 id, name, price, exchange, receive, fileName, category
         );
 
         storeRepository.save(storeMenuEntity);
+        saveFileService.saveImage(files,fileName);
+        utilService.saveLocker(CategoryLockerId.Menu.getSubId(),storeMenuEntity.getId());
 
-        return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+        return new UtilDomain(HttpStatus.OK.value(), "Success");
     }
 
     //    ---------- getStores All
@@ -79,32 +82,26 @@ public class StoresService {
     // getMenuDetail
 
     public MenuStoreDomain getStoresDetail(String id) {
-        List<StoreMenuEntity> detailMenuOptional = storeRepository.findByIdAccount(id);
+        List<StoreMenuEntity> detailMenuOptional = storeRepository.findByAccountId(id);
 
         if (detailMenuOptional != null) {
-            List<MenuStore> menuItems = new ArrayList<>();
+            List<MenuStoreSubdomain> menuItems = new ArrayList<>();
 
             for (StoreMenuEntity storeMenuEntity : detailMenuOptional) {
-                menuItems.add(
-                        new MenuStore(
-                                storeMenuEntity.getId(),
-                                storeMenuEntity.getNameMenu(),
-                                storeMenuEntity.getPrice(),
-                                storeMenuEntity.getExchange(),
-                                storeMenuEntity.getReceive(),
-                                storeMenuEntity.getPictures()
-                        )
-                );
+                if (!storeMenuEntity.isActive()) continue;
+                menuItems.add(new MenuStoreSubdomain(storeMenuEntity));
             }
 
             Optional<MemberEntity> optional = memberRepository.findById(id);
 
             if (optional.isPresent()) {
                 MemberEntity entity = optional.get();
+                utilService.checkActive(entity.isActive());
+
                 MenuStoreDomain menuStoreDomains = new MenuStoreDomain();
-                menuStoreDomains.setId(entity.getIdAccount());
+                menuStoreDomains.setId(utilService.getIdLocker(entity.getId()));
                 menuStoreDomains.setStorePicture(entity.getPicture());
-                menuStoreDomains.setMenuStores(menuItems);
+                menuStoreDomains.setMenuStoreSubdomains(menuItems);
                 return menuStoreDomains;
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
@@ -114,14 +111,16 @@ public class StoresService {
         }
     }
 
-    public UtilStoreDomain toStore(String id) {
-        Optional<MemberEntity> e = memberRepository.findById(id);
-        if (e.isPresent()) {
-            MemberEntity entity = e.get();
+    public UtilDomain toStore(String id) {
+        Optional<MemberEntity> optional = memberRepository.findById(id);
+        if (optional.isPresent()) {
+            MemberEntity entity = optional.get();
+            utilService.checkActive(entity.isActive());
+
             if (!entity.isStore()) {
                 entity.setStore(true);
                 memberRepository.save(entity);
-                return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+                return new UtilDomain(HttpStatus.OK.value(), "Success");
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You is already Store");
             }
@@ -130,27 +129,30 @@ public class StoresService {
         }
     }
 
-    public UtilStoreDomain uploadPictureStore(String id, MultipartFile files) throws IOException {
+    public UtilDomain uploadPictureStore(String id, MultipartFile files) throws IOException {
         if (files == null || files.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payload is Empty or Null");
         }
 
         String fileName = String.format("%s.png", System.currentTimeMillis());
-        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
-        Files.copy(files.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+//        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
+//        Files.copy(files.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
         Optional<MemberEntity> memberOptional = memberRepository.findById(id);
         if (memberOptional.isPresent()) {
             MemberEntity memberEntity = memberOptional.get();
+            utilService.checkActive(memberEntity.isActive());
             memberEntity.setPicture(fileName);
+            saveFileService.saveImage(files,fileName);
             memberRepository.save(memberEntity);
-            return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
+
+            return new UtilDomain(HttpStatus.OK.value(), "Success");
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
         }
     }
 
-    public Set<AllStoresDomain> getMenuCategory(int category) {
+    public Set<AllStoresDomain> getStoreCategory(int category) {
 
         Set<AllStoresDomain> list = new HashSet<>();
         List<StoreMenuEntity> idAccounts = storeRepository.findByCategory(category);
@@ -159,46 +161,17 @@ public class StoresService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "");
         }
 
-        MemberEntity e;
+        MemberEntity entity;
 
         for (StoreMenuEntity storeMenuEntity : idAccounts) {
-            e = memberRepository.findById(storeMenuEntity.getIdAccount()).get();
+            entity = memberRepository.findById(storeMenuEntity.getAccountId()).get();
+            if (!entity.isActive()) continue;
             list.add(
                     new AllStoresDomain(
-                            e.getIdAccount(),
-                            e.getName()
-                    )
+                            utilService.getIdLocker(entity.getId()),
+                            entity.getName())
             );
         }
         return list;
-    }
-
-    public UtilStoreDomain deleteMenu(String idMenu) {
-        StoreMenuEntity entity = storeRepository.findById(idMenu).get();
-        storeRepository.delete(entity);
-        return new UtilStoreDomain(HttpStatus.OK.value(), "Success");
-    }
-
-
-    public HashDomain getHashMenuQrcode(String id, String idStore, int point) {
-
-        if (point > 0) {
-            Optional<StoreMenuEntity> optional = storeRepository.findById(idStore);
-            if (optional.isPresent()) {
-
-                BuyMenuEntity entity = new BuyMenuEntity();
-
-                entity.setIdAccount(id);
-                entity.setStoreId(idStore);
-                entity.setPoint(point);
-                buyRepo.save(entity);
-
-                return new HashDomain(entity.getId());
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
-            }
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "point incorrect");
-        }
     }
 }

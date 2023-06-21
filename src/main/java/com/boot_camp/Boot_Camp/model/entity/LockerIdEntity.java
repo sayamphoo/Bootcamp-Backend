@@ -1,5 +1,6 @@
 package com.boot_camp.Boot_Camp.model.entity;
 
+
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -8,27 +9,22 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+@Document(indexName = "id-locker")
 @Getter
 @Setter
-@Document(indexName = "history-transfer")
-public class HistoryTransferEntity {
+public class LockerIdEntity {
     @Id
     @ReadOnlyProperty
     private String id;
 
-    @Field(type = FieldType.Text, name = "accountId")
-    private String accountId;
+    @Field(type = FieldType.Text, name = "idLocker")
+    private String idLocker;
 
-    @Field(type = FieldType.Text, name = "opposite")
-    private String opposite;
+    @Field(type = FieldType.Text, name = "idRecord")
+    private String idRecord;
 
-    @Field(type = FieldType.Text, name = "state")
-    private String state;
-
-    @Field(type = FieldType.Text, name = "date")
-    private String date;
-
-    @Field(type = FieldType.Integer, name = "point")
-    private int point;
-
+    public LockerIdEntity() {}
+    public LockerIdEntity(String idRecord) {
+        this.idRecord = idRecord;
+    }
 }

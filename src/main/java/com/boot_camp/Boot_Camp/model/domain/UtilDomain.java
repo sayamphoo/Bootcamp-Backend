@@ -5,12 +5,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UtilStoreDomain {
+public class UtilDomain {
     private int code;
     private String message;
 
 
-    public UtilStoreDomain(int code , String message) {
+    public UtilDomain(int code , String message) {
         this.code = code;
         this.message = message;
     }

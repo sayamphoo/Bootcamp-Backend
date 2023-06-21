@@ -1,47 +1,37 @@
 package com.boot_camp.Boot_Camp.model.wrapper;
 
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
-import com.boot_camp.Boot_Camp.services.ComponentService;
+import com.boot_camp.Boot_Camp.services.UtilService;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class MemberWrapper implements Cloneable {
-
-    private String idAccount;
     private String name;
     private String username;
     private String password;
     private String birthday;
-    private boolean store;
     private String sex;
-    private int point = 0;
-    private String message;
 
-    public MemberWrapper() {}
+    public MemberWrapper() {
+    }
 
     public MemberWrapper(MemberEntity e) {
-        this.idAccount = e.getId();
         this.name = e.getName();
         this.username = e.getUsername();
         this.password = e.getPassword();
         this.birthday = e.getBirthday().toString();
-        this.store = e.isStore();
         this.sex = e.getSex();
-        this.point = e.getPoint();
     }
 
     public MemberEntity toEntity() {
         MemberEntity e = new MemberEntity();
-        e.setIdAccount(this.idAccount);
         e.setName(this.name);
         e.setUsername(this.username);
         e.setPassword(this.password);
-        e.setBirthday(ComponentService.coverStrToLocaltime(this.birthday));
-        e.setStore(this.store);
+        e.setBirthday(new UtilService().coverStrToLocaltime(this.birthday));
         e.setSex(this.sex);
-        e.setPoint(this.point);
         return e;
     }
 

@@ -1,7 +1,6 @@
 package com.boot_camp.Boot_Camp.controller;
 
 import com.boot_camp.Boot_Camp.model.domain.*;
-import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
 import com.boot_camp.Boot_Camp.model.wrapper.*;
 import com.boot_camp.Boot_Camp.services.UtilService;
 import com.boot_camp.Boot_Camp.services.MembersService;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -29,10 +27,9 @@ public class MemberController {
 
     @PostMapping("/register")
     public MemberDomain register(
-            @RequestBody(required = false) MemberWrapper w,
-            HttpServletResponse response) {
+            @RequestBody(required = false) MemberWrapper w) {
 
-        return membersService.register(w, response);
+        return membersService.register(w);
     }
 
     @GetMapping("/get-point")
@@ -44,40 +41,6 @@ public class MemberController {
                     "User not found.");
         }
         return membersService.getPoint(id);
-    }
-
-    @GetMapping("/validate-transfer-point")
-    public ValidateTransferPointDomain validateTransferPointDomain(
-            @RequestParam() String id_payee) {
-
-        return membersService.validateTransferPointDomain(id_payee);
-    }
-
-    @PutMapping("/transfer-point")
-    public TransferPointDomain transferPoint(
-            @RequestBody TransferPointWrapper transferPointWrapper,
-            HttpServletRequest request) {
-
-        String id = request.getAttribute("id").toString();
-        if (id == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
-        }
-
-        transferPointWrapper.setOriginID(id);
-        return membersService.transferPoint(transferPointWrapper);
-    }
-
-    @PutMapping("/transfer-point-for-menu")
-    public UtilStoreDomain transferPointForMenu(
-            @RequestParam(name = "hash") String hash,
-            HttpServletRequest request) {
-
-        String id = request.getAttribute("id").toString();
-        if (id == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
-        }
-
-        return membersService.transferPointForMenu(id, hash);
     }
 
     @GetMapping("/get-history-transfer")
@@ -94,7 +57,7 @@ public class MemberController {
     }
 
     @PutMapping("/reset-password")
-    public UtilStoreDomain resetPassword(
+    public UtilDomain resetPassword(
             @RequestBody ResetPasswordWrapper resetPasswordWrapper,
             HttpServletRequest request) {
 
@@ -110,40 +73,17 @@ public class MemberController {
         return membersService.getPersonalData(id);
     }
 
-    @GetMapping("/read-hash-transfer")
-    public ReadHashTransferDomain readHashTransfer(
-            @RequestParam("hash") String hash) {
 
-        return membersService.readHashTransfer(hash);
-    }
-
-    @DeleteMapping("/delete-account")
-    public UtilStoreDomain deleteAccount(HttpServletRequest request) {
-        String id = request.getAttribute("id").toString();
-        return membersService.deleteAccount(id);
-    }
-
-    @PostMapping("/edit-personal-data")
-    public UtilStoreDomain editPersonalData(@RequestBody EditPersonalWrapper wrapper, HttpServletRequest res) {
+    @PutMapping("/edit-personal-data")
+    public UtilDomain editPersonalData(@RequestBody EditPersonalWrapper wrapper, HttpServletRequest res) {
         String id = res.getAttribute("id").toString();
         return membersService.editPersonalData(id, wrapper);
     }
 
-
-    @GetMapping("/show")
-    public Iterable<MemberEntity> show() {
-
-        return membersService.showDatabase();
-    }
-
     @PutMapping("/forgot-password")
-    public UtilStoreDomain forgotPassword(
-            @RequestBody ForgotPasswordWrapper wrapper ) {
-
-        System.out.println(wrapper.getBirthday());
-
+    public UtilDomain forgotPassword(
+            @RequestBody ForgotPasswordWrapper wrapper) {
         return membersService.forgotPassword(wrapper);
-
     }
 
 }

@@ -1,10 +1,8 @@
 package com.boot_camp.Boot_Camp.controller;
 
-import com.boot_camp.Boot_Camp.model.domain.HashDomain;
-import com.boot_camp.Boot_Camp.model.domain.UtilStoreDomain;
+import com.boot_camp.Boot_Camp.model.domain.UtilDomain;
 import com.boot_camp.Boot_Camp.model.domain.AllStoresDomain;
 import com.boot_camp.Boot_Camp.model.domain.MenuStoreDomain;
-import com.boot_camp.Boot_Camp.model.entity.StoreMenuEntity;
 import com.boot_camp.Boot_Camp.repository.*;
 import com.boot_camp.Boot_Camp.services.UtilService;
 import com.boot_camp.Boot_Camp.services.MembersService;
@@ -30,11 +28,7 @@ public class StoresController {
     private StoreRepository storeRepository;
 
     @Autowired
-    private BuyMenuRepository buyRepository;
-
-    @Autowired
     private StatisticsMenuRepository statisticsMenuRepository;
-
 
     @Autowired
     private StoresService storesService;
@@ -51,24 +45,25 @@ public class StoresController {
     }
 
     @GetMapping("/get-detail-store")
-    public MenuStoreDomain getDetailStore(@RequestParam("id") String id) {
-        id = utilService.searchDatabaseID(id);
+    public MenuStoreDomain getDetailStore(
+            @RequestParam("id") String idLocker) {
+        String id = utilService.getIdRecord(idLocker); // id shop
         return storesService.getStoresDetail(id);
     }
 
     @PutMapping("/set-to-store")
-    public UtilStoreDomain toStore(HttpServletRequest req, HttpServletResponse res) {
+    public UtilDomain toStore(HttpServletRequest req, HttpServletResponse res) {
         String id = req.getAttribute("id").toString();
         return storesService.toStore(id);
     }
 
     @PostMapping(value = "/upload-menu", consumes = "multipart/form-data")
-    public UtilStoreDomain uploadMenu(
+    public UtilDomain uploadMenu(
             @RequestParam("name") String name,
             @RequestParam("price") int price,
             @RequestParam("exchange") int exchange,
             @RequestParam("receive") int receive,
-            @RequestParam("file") List<MultipartFile> file,
+            @RequestParam("file") MultipartFile file,
             @RequestParam("category") int category,
             HttpServletRequest req) throws Exception {
 
@@ -78,38 +73,20 @@ public class StoresController {
 
     }
 
-    @DeleteMapping("/delete-menu")
-    public UtilStoreDomain menuDelete(@RequestParam("idMenu") String idMenu, HttpServletRequest req) {
-        String id = req.getAttribute("id").toString();
-        System.out.println(id);
-        System.out.println(idMenu);
-        return storesService.deleteMenu(idMenu);
-    }
-
     @GetMapping("/get-menu-category")
     public Set<AllStoresDomain> getMenuCategory(
             @RequestParam("category") int category) {
-        return storesService.getMenuCategory(category);
+        return storesService.getStoreCategory(category);
     }
 
     @PostMapping(value = "/upload-picture-stores", consumes = "multipart/form-data")
-    public UtilStoreDomain uploadPictureStore(@RequestParam("file") MultipartFile file, HttpServletRequest req, HttpServletResponse res) throws Exception {
+    public UtilDomain uploadPictureStore(
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest req) throws Exception {
         String id = req.getAttribute("id").toString();
         return storesService.uploadPictureStore(id, file);
     }
 
-    @GetMapping("/get-hash-menu-qrcode")
-    public HashDomain getHashMenuQrcode(@RequestParam("id") String idStore, @RequestParam("point") int point, HttpServletRequest req) {
-        String id = req.getAttribute("idAccount").toString();
-        System.out.println(id);
-        return storesService.getHashMenuQrcode(id, idStore, point);
-    }
-
 
     //-----------------------------------------------------------------------------
-    @GetMapping("/show")
-    public Iterable<StoreMenuEntity> show() {
-        return storesService.getAll();
-    }
-
 }
