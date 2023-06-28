@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/util")
@@ -20,34 +19,33 @@ public class UtilController {
     @Autowired
     private MemberRepository memberRepo;
     @Autowired
-    private StoreRepository storeRepository;
+    private StoreRepository storeRepo;
 
     @Autowired
     private SaveFileService saveFileService;
     @Autowired
-    private StatisticsMenuRepository statisticsMenuRepository;
+    private StatisticsMenuRepository statisticsMenuRepo;
 
     @Value("${app.image.directory}")
     private String imageDirectoryPath;
 
     @GetMapping(value = "/image/{filename}", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> getImage(@PathVariable String filename) throws IOException {
+    public ResponseEntity<byte[]> getImage(@PathVariable(required = false) String filename) throws IOException {
+
+        if (filename == null) {
+            filename = "auto";
+        }
         return saveFileService.getImages(filename);
     }
 
-//    @PostMapping("/dsdfsdf")
-//    public ResponseEntity<Map<String,Integer>> getHH(@RequestBody Map<String,Integer> list) {
-//        return  ResponseEntity.ok().body(list);
-//    }
 
     @DeleteMapping("/all-delete")
-//    @PostConstruct
     public String delete() {
 
         historyTransferRepo.deleteAll();
-        storeRepository.deleteAll();
+        storeRepo.deleteAll();
         memberRepo.deleteAll();
-        statisticsMenuRepository.deleteAll();
+        statisticsMenuRepo.deleteAll();
         return "Success";
     }
 }

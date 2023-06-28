@@ -32,6 +32,7 @@ public class StoresController {
 
     @Autowired
     private StoresService storesService;
+
     @Autowired
     private MembersService membersService;
 
@@ -47,6 +48,7 @@ public class StoresController {
     @GetMapping("/get-detail-store")
     public MenuStoreDomain getDetailStore(
             @RequestParam("id") String idLocker) {
+
         String id = utilService.getIdRecord(idLocker); // id shop
         return storesService.getStoresDetail(id);
     }

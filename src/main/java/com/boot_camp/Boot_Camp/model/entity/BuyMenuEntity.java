@@ -12,8 +12,8 @@ import java.util.ArrayList;
 @Document(indexName = "buy_menu")
 public class BuyMenuEntity {
     private String id;
-    private String idRecord;
-    private ArrayList<String> idMenu;
+    private String idRecord; //store
+    private ArrayList<String> idMenu; // idRecord
     private int amount;
     private boolean isScan;
 }

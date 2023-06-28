@@ -63,7 +63,7 @@ public class UtilService {
         if (entity != null) {
             return entity.getIdRecord();
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Id Not Found");
         }
     }
 
@@ -72,7 +72,7 @@ public class UtilService {
         if (entity != null) {
             return entity.getIdLocker();
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Id Not Found");
         }
     }
 }

@@ -11,15 +11,12 @@ public class AllStoresDomain {
 
     String id;
     String name;
+    String picture;
 
     public AllStoresDomain(){}
     public AllStoresDomain(MemberEntity e) {
         this.id = new UtilService().getIdLocker(e.getId());
         this.name = e.getName();
-    }
-
-    public AllStoresDomain(String idLocker,String name) {
-        this.id = idLocker;
-        this.name = name;
+        this.picture = getPicture();
     }
 }

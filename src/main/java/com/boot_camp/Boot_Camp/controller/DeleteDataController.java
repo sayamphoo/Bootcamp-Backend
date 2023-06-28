@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class DeleteDataController {
     @Autowired
     DeleteService deleteService;
-
     @DeleteMapping("/delete")
     public UtilDomain remove(@RequestParam("id") String idLocker) {
         return deleteService.remove(idLocker);

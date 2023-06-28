@@ -17,10 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TransferService {
@@ -54,7 +51,7 @@ public class TransferService {
         }
 
         Optional<MemberEntity> originOptional = memberRepo.findById(originID);
-        Optional<MemberEntity> payeeOptional = memberRepo.findById(originID);
+        Optional<MemberEntity> payeeOptional = memberRepo.findById(payeeID);
 
         if (originOptional.isPresent() && payeeOptional.isPresent()) {
             MemberEntity[] member = {originOptional.get(), payeeOptional.get()};
@@ -96,6 +93,7 @@ public class TransferService {
             transferPointDomain.setPayee(payeeID);
             transferPointDomain.setMessage(HttpStatus.OK.getReasonPhrase());
             transferPointDomain.setBalance(member[0].getPoint());
+
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
@@ -110,7 +108,8 @@ public class TransferService {
         return new ValidateTransferPointDomain(memberEntity);
     }
 
-    public HashDomain buildQrcodeForMenu(Map<String, Integer> lists,String id) {
+    public HashDomain buildQrcodeForMenu(Map<String, Integer> lists, String id) {
+
         int amount = 0;
         ArrayList<String> menuLists = new ArrayList<>();
         String idRecord;
@@ -118,14 +117,18 @@ public class TransferService {
         StoreMenuEntity entity;
 
         for (Map.Entry<String, Integer> list : lists.entrySet()) {
-            idRecord = lockerIdRepository.findIdRecordByIdLocker(list.getKey()).getIdRecord();
+            idRecord = utilService.getIdRecord(list.getKey());
             optional = storeRepository.findById(idRecord);
 
             if (optional.isPresent()) {
                 entity = optional.get();
                 if (!entity.isActive()) continue;
                 amount += (entity.getExchange() * list.getValue());
-                menuLists.add(list.getKey()); //id Locker
+                menuLists.add(utilService.getIdRecord(list.getKey())); //id Locker
+            } else {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        String.format("Not found menu id : %s in data", idRecord));
             }
         }
 
@@ -142,29 +145,41 @@ public class TransferService {
     public BuyMenuDomain validateMenu(String hash) {
         Optional<BuyMenuEntity> optional = buyMenuRepository.findById(hash);
         if (optional.isPresent()) {
+
             BuyMenuEntity entity = optional.get();
-            if (entity.isScan()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Qrcode is Scan");
+            if (entity.isScan()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Qrcode is Scan");
+
             entity.setScan(true);
             buyMenuRepository.save(entity);
-            return new BuyMenuDomain(entity);
+
+            List<MenuStoreSubdomain> lists =new ArrayList<>();
+
+            StoreMenuEntity storeMenuEntity;
+            for (String idRecord : entity.getIdMenu()) {
+                storeMenuEntity = storeRepository.findById(idRecord).get();
+                storeMenuEntity.setId(utilService.getIdLocker(idRecord));
+                lists.add(new MenuStoreSubdomain(storeMenuEntity));
+            }
+
+            return new BuyMenuDomain(entity,lists);
         } else {
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT,"Menu Not Found");
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Menu Not Found");
         }
     }
 
     public UtilDomain transferConfirmPoint(String id, String hash) {
         Optional<BuyMenuEntity> optional = buyMenuRepository.findById(hash);
-        if(optional.isPresent()) {
+        if (optional.isPresent()) {
             BuyMenuEntity entity = optional.get();
             if (!entity.isScan()) {
                 entity.setScan(true);
                 buyMenuRepository.save(entity);
             }
 
-            this.transferPoint(new TransferPointWrapper(entity.getIdRecord(),id,entity.getAmount()));
+            this.transferPoint(new TransferPointWrapper(entity.getIdRecord(), id, entity.getAmount()));
             return new UtilDomain(HttpStatus.OK.value(), "Success");
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"hash not found");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "hash not found");
         }
     }
 
@@ -177,10 +192,10 @@ public class TransferService {
             if (entity.getIdRecord().equals(id)) {
                 entity.setScan(true);
             } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Bad Request");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Request");
             }
         }
 
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Qrcode not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Qrcode not found");
     }
 }

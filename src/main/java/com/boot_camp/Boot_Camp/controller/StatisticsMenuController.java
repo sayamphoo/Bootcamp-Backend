@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(value = "/api/v1/statistic")
 public class StatisticsMenuController {
 //    @Autowired
-//    StatisticsMenuRepository statisticsMenuRepo;
+//    statisticsMenuRepo;
 //
 //    @Autowired
 //    StatisticsService statisticsService;

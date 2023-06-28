@@ -60,16 +60,14 @@ public class StoresService {
         String RESET_IMAGE_NAME = String.valueOf(((int) System.currentTimeMillis() * (int) (Math.random() * 9.0 + 1.0)));
 
         String fileName = String.format("%s.png", RESET_IMAGE_NAME);
-//        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
-//        Files.copy(files.get(0).getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
         StoreMenuEntity storeMenuEntity = new StoreMenuEntity(
                 id, name, price, exchange, receive, fileName, category
         );
 
         storeRepository.save(storeMenuEntity);
-        saveFileService.saveImage(files,fileName);
-        utilService.saveLocker(CategoryLockerId.Menu.getSubId(),storeMenuEntity.getId());
+        utilService.saveLocker(CategoryLockerId.Menu.getSubId(), storeMenuEntity.getId());
+        saveFileService.saveImage(files, fileName);
 
         return new UtilDomain(HttpStatus.OK.value(), "Success");
     }
@@ -82,6 +80,7 @@ public class StoresService {
     // getMenuDetail
 
     public MenuStoreDomain getStoresDetail(String id) {
+
         List<StoreMenuEntity> detailMenuOptional = storeRepository.findByAccountId(id);
 
         if (detailMenuOptional != null) {
@@ -89,6 +88,7 @@ public class StoresService {
 
             for (StoreMenuEntity storeMenuEntity : detailMenuOptional) {
                 if (!storeMenuEntity.isActive()) continue;
+                storeMenuEntity.setId(utilService.getIdLocker(storeMenuEntity.getId()));
                 menuItems.add(new MenuStoreSubdomain(storeMenuEntity));
             }
 
@@ -143,9 +143,8 @@ public class StoresService {
             MemberEntity memberEntity = memberOptional.get();
             utilService.checkActive(memberEntity.isActive());
             memberEntity.setPicture(fileName);
-            saveFileService.saveImage(files,fileName);
             memberRepository.save(memberEntity);
-
+            saveFileService.saveImage(files, fileName);
             return new UtilDomain(HttpStatus.OK.value(), "Success");
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not Found");
@@ -165,12 +164,14 @@ public class StoresService {
 
         for (StoreMenuEntity storeMenuEntity : idAccounts) {
             entity = memberRepository.findById(storeMenuEntity.getAccountId()).get();
+
             if (!entity.isActive()) continue;
+
+            entity.setId(utilService.getIdLocker(entity.getId()));
             list.add(
-                    new AllStoresDomain(
-                            utilService.getIdLocker(entity.getId()),
-                            entity.getName())
+                    new AllStoresDomain(entity)
             );
+
         }
         return list;
     }

@@ -24,7 +24,7 @@ public class SaveFileService {
         this.restTemplate = new RestTemplate();
     }
 
-    private final String domain = "http://localhost:6700";
+    private final String domain = "http://save:6700";
 
     public void saveImage(MultipartFile file,String name) throws IOException {
 
@@ -39,9 +39,7 @@ public class SaveFileService {
 
         String path = domain + "/save";
         restTemplate.postForEntity(path, requestEntity, String.class);
-
     }
-
 
     public ResponseEntity<byte[]> getImages(String fileName) throws IOException {
         String path = domain + "/image/" + fileName;

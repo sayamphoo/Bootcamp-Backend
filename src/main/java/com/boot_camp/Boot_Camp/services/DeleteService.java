@@ -34,6 +34,7 @@ public class DeleteService {
     private UtilService utilService;
 
     public UtilDomain remove(String idLocker) {
+
         switch (idLocker.substring(0, 1)) {
             case "1":
                 return removeAccount(utilService.getIdRecord(idLocker));
@@ -49,6 +50,7 @@ public class DeleteService {
     }
 
     private UtilDomain removePromotion(String idRecord) {
+
         Optional<PromotionEntity> optional = promotionRepo.findById(idRecord);
         if (optional.isPresent()) {
             PromotionEntity entity = optional.get();
