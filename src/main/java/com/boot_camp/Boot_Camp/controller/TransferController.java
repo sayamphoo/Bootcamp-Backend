@@ -1,6 +1,7 @@
 package com.boot_camp.Boot_Camp.controller;
 
 import com.boot_camp.Boot_Camp.model.domain.*;
+import com.boot_camp.Boot_Camp.model.wrapper.BuildQrcodeForMenuWrapper;
 import com.boot_camp.Boot_Camp.model.wrapper.TransferPointWrapper;
 import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
 import com.boot_camp.Boot_Camp.services.TransferService;
@@ -49,11 +50,9 @@ public class TransferController {
 
     @PostMapping("/build-qrcode-for-menu")
     public HashDomain buildQrcodeForMenu(
-            @RequestBody Map<String, Integer> lists, HttpServletRequest req) {
-
+            @RequestBody BuildQrcodeForMenuWrapper wrapper, HttpServletRequest req) {
         String id = req.getAttribute("id").toString();
-
-        return transferService.buildQrcodeForMenu(lists, id);
+        return transferService.buildQrcodeForMenu(id,wrapper);
     }
 
     @DeleteMapping("/cancel-qrcode")
@@ -63,17 +62,20 @@ public class TransferController {
         return transferService.cancelQrcode(id, hash);
     }
 
-
     @GetMapping("/validate-menu-for-menu")
     private BuyMenuDomain validateMenu(@RequestParam(name = "hash") String hash) {
-
         return transferService.validateMenu(hash);
     }
 
     @PutMapping("/transfer-confirm-point")
-    public UtilDomain transferConfirmPoint(@RequestParam(name = "hash") String hash, HttpServletRequest req) {
+    public UtilDomain transferConfirmPoint(
+            @RequestBody() Map<String,String> map,
+            HttpServletRequest req) {
 
-        String id = req.getAttribute("name").toString();
+        String hash = map.get("hash");
+
+        String id = req.getAttribute("id").toString();
+
         return transferService.transferConfirmPoint(id, hash);
     }
 

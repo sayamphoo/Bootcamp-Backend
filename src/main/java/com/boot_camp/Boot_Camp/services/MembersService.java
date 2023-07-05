@@ -154,7 +154,6 @@ public class MembersService {
 
     }
 
-
     //    transferPoint
 
     public List<HistoryTransferDomain> getHistoryTransDomain(String id) {
@@ -168,6 +167,7 @@ public class MembersService {
 //        }
 
         for (HistoryTransferEntity e : entity) {
+            e.setOpposite(utilService.getIdLocker(e.getOpposite()));
             domain.add(new HistoryTransferDomain(e));
         }
 
@@ -187,6 +187,7 @@ public class MembersService {
 
         for (MemberEntity e : entity) {
             if (!e.isActive()) continue;
+            e.setId(utilService.getIdLocker(e.getId()));
             domain.add(new AllStoresDomain(e));
         }
 
@@ -256,6 +257,19 @@ public class MembersService {
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "");
         }
+    }
+
+    protected MemberEntity getEntityMember(String id){
+        Optional<MemberEntity> optional = memberRepo.findById(id);
+        if (optional.isPresent()) {
+            return optional.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Not found");
+        }
+    }
+
+    protected void saveMemberEntity(MemberEntity entity) {
+        memberRepo.save(entity);
     }
 }
 

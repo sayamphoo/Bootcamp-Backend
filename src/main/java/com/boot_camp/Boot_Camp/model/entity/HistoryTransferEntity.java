@@ -1,5 +1,6 @@
 package com.boot_camp.Boot_Camp.model.entity;
 
+import com.boot_camp.Boot_Camp.services.HistoryTransferService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -19,6 +20,9 @@ public class HistoryTransferEntity {
     @Field(type = FieldType.Text, name = "accountId")
     private String accountId;
 
+    @Field(type = FieldType.Text,name = "transactionId")
+    private String transactionId;
+
     @Field(type = FieldType.Text, name = "opposite")
     private String opposite;
 
@@ -30,5 +34,14 @@ public class HistoryTransferEntity {
 
     @Field(type = FieldType.Integer, name = "point")
     private int point;
+
+    public HistoryTransferEntity(){}
+
+    public HistoryTransferEntity(String accountId,String opposite ,String state,int point) {
+        this.accountId = accountId;
+        this.opposite = opposite;
+        this.state = state;
+        this.point = point;
+    }
 
 }

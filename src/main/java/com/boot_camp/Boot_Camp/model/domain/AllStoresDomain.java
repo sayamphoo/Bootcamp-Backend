@@ -13,10 +13,9 @@ public class AllStoresDomain {
     String name;
     String picture;
 
-    public AllStoresDomain(){}
     public AllStoresDomain(MemberEntity e) {
-        this.id = new UtilService().getIdLocker(e.getId());
+        this.id = e.getId();
         this.name = e.getName();
-        this.picture = getPicture();
+        this.picture = e.getPicture();
     }
 }

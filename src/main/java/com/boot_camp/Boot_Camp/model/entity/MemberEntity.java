@@ -31,7 +31,6 @@ public class MemberEntity {
     @Field(type = FieldType.Text, name = "password")
     private String password;
 
-
     @Field(type = FieldType.Date,
             format = DateFormat.date_optional_time,
             name = "birthday")
@@ -52,6 +51,7 @@ public class MemberEntity {
 
     @Field(type = FieldType.Boolean,name = "isActive")
     private boolean isActive;
+
 
     public void editPersonal(EditPersonalWrapper wrapper) {
         this.name = wrapper.getName();

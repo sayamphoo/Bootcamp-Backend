@@ -15,5 +15,6 @@ public class BuyMenuEntity {
     private String idRecord; //store
     private ArrayList<String> idMenu; // idRecord
     private int amount;
+    private String state;
     private boolean isScan;
 }

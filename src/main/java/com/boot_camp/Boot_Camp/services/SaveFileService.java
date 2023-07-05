@@ -24,7 +24,7 @@ public class SaveFileService {
         this.restTemplate = new RestTemplate();
     }
 
-    private final String domain = "http://save:6700";
+    private final String domain = "http://127.0.0.1:6700";
 
     public void saveImage(MultipartFile file,String name) throws IOException {
 

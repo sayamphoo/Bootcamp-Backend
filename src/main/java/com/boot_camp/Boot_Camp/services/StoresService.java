@@ -72,10 +72,6 @@ public class StoresService {
         return new UtilDomain(HttpStatus.OK.value(), "Success");
     }
 
-    //    ---------- getStores All
-    public Iterable<StoreMenuEntity> getAll() {
-        return storeRepository.findAll();
-    }
 
     // getMenuDetail
 
@@ -135,8 +131,6 @@ public class StoresService {
         }
 
         String fileName = String.format("%s.png", System.currentTimeMillis());
-//        Path targetLocation = imageStorage.getImageDirectory().resolve(fileName);
-//        Files.copy(files.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
         Optional<MemberEntity> memberOptional = memberRepository.findById(id);
         if (memberOptional.isPresent()) {
@@ -153,25 +147,34 @@ public class StoresService {
 
     public Set<AllStoresDomain> getStoreCategory(int category) {
 
-        Set<AllStoresDomain> list = new HashSet<>();
+        Set<AllStoresDomain> list = new LinkedHashSet<>();
+
+        Set<String> uniqueIds = new HashSet<>();
         List<StoreMenuEntity> idAccounts = storeRepository.findByCategory(category);
 
         if (idAccounts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "");
         }
 
+        for (StoreMenuEntity storeMenuEntity : idAccounts) {
+            uniqueIds.add(storeMenuEntity.getAccountId());
+        }
+
         MemberEntity entity;
 
-        for (StoreMenuEntity storeMenuEntity : idAccounts) {
-            entity = memberRepository.findById(storeMenuEntity.getAccountId()).get();
+        for (String uniqueId : uniqueIds) {
+
+            System.out.println(uniqueId);
+
+            entity = memberRepository.findById(uniqueId).get();
 
             if (!entity.isActive()) continue;
 
             entity.setId(utilService.getIdLocker(entity.getId()));
-            list.add(
-                    new AllStoresDomain(entity)
-            );
 
+            AllStoresDomain newStoreDomain = new AllStoresDomain(entity);
+            if (list.contains(newStoreDomain)) continue;
+            list.add(newStoreDomain);
         }
         return list;
     }

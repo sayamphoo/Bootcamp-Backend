@@ -27,8 +27,6 @@ public class UtilService {
     private MemberRepository memberRepo;
     @Autowired
     private StoreRepository storeRepository;
-
-
     @Autowired
     private StatisticsMenuRepository statisticsMenuRepository;
 
