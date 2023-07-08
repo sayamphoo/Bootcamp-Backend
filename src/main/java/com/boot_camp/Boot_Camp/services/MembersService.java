@@ -214,20 +214,17 @@ public class MembersService {
 
     }
 
-
 //    --------------------------------------------
 
     public Iterable<MemberEntity> showDatabase() {
         return memberRepo.findAll();
     }
 
-
     public UtilDomain editPersonalData(String id, EditPersonalWrapper wrapper) {
         Optional<MemberEntity> optional = memberRepo.findById(id);
         if (optional.isPresent()) {
             MemberEntity entity = optional.get();
             utilService.checkActive(entity.isActive());
-
             entity.editPersonal(wrapper);
             memberRepo.save(entity);
 

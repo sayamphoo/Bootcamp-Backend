@@ -16,6 +16,7 @@ public class MenuStoreSubdomain {
     private int receive;
     private int point;
     private int category;
+    private int amount;
 
     public MenuStoreSubdomain(StoreMenuEntity entity) {
         this.id = entity.getId();

@@ -68,7 +68,7 @@ public class TransferController {
     }
 
     @PutMapping("/transfer-confirm-point")
-    public UtilDomain transferConfirmPoint(
+    public TransferPointDomain transferConfirmPoint(
             @RequestBody() Map<String,String> map,
             HttpServletRequest req) {
 
@@ -79,4 +79,8 @@ public class TransferController {
         return transferService.transferConfirmPoint(id, hash);
     }
 
+    @GetMapping(path = "/transfer-exchange-interaction")
+    public Map<String,Boolean> TransferExchangeInteraction(@RequestParam String hash){
+        return transferService.TransferExchangeInteraction(hash);
+    }
 }
