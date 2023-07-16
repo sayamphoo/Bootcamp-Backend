@@ -89,6 +89,14 @@ public class StoresController {
         return storesService.uploadPictureStore(id, file);
     }
 
+    @PostMapping(value = "/update-location")
+    public UtilDomain updateLocation(
+            @RequestParam("location") String location,HttpServletRequest request
+    ) {
+        String id = request.getAttribute("id").toString();
+        return storesService.updateLocation(id,location);
+    }
+
 
     //-----------------------------------------------------------------------------
 }

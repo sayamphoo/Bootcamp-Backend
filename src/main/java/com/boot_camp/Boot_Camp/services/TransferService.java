@@ -1,10 +1,7 @@
 package com.boot_camp.Boot_Camp.services;
 
 import com.boot_camp.Boot_Camp.model.domain.*;
-import com.boot_camp.Boot_Camp.model.entity.BuyMenuEntity;
-import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
-import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
-import com.boot_camp.Boot_Camp.model.entity.StoreMenuEntity;
+import com.boot_camp.Boot_Camp.model.entity.*;
 import com.boot_camp.Boot_Camp.model.wrapper.BuildQrcodeForMenuWrapper;
 import com.boot_camp.Boot_Camp.model.wrapper.TransferPointWrapper;
 import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
@@ -66,23 +63,23 @@ public class TransferService {
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
             String formattedDate = now.format(formatter);
-//
-//            HistoryTransferEntity historyOrigin = new HistoryTransferEntity();
-//            HistoryTransferEntity historyPayee = new HistoryTransferEntity();
-//
-//            historyOrigin.setAccountId(member[0].getId());
-//            historyOrigin.setDate(formattedDate);
-//            historyOrigin.setState("withdrawal");
-//            historyOrigin.setPoint(-point);
-//            historyOrigin.setOpposite(member[1].getId());
-//
-//            historyPayee.setAccountId(member[1].getId());
-//            historyPayee.setDate(formattedDate);
-//            historyPayee.setState("deposit");
-//            historyPayee.setOpposite(member[0].getId());
-//            historyPayee.setPoint(point);
-//
-//            utilService.transferSaveHistory(Arrays.asList(historyOrigin, historyPayee));
+
+            HistoryTransferEntity historyOrigin = new HistoryTransferEntity();
+            HistoryTransferEntity historyPayee = new HistoryTransferEntity();
+
+            historyOrigin.setAccountId(member[0].getId());
+            historyOrigin.setDate(formattedDate);
+            historyOrigin.setState("withdrawal");
+            historyOrigin.setPoint(-point);
+            historyOrigin.setOpposite(member[1].getId());
+
+            historyPayee.setAccountId(member[1].getId());
+            historyPayee.setDate(formattedDate);
+            historyPayee.setState("deposit");
+            historyPayee.setOpposite(member[0].getId());
+            historyPayee.setPoint(point);
+
+            utilService.transferSaveHistory(Arrays.asList(historyOrigin, historyPayee));
 
             transferPointDomain.setState("withdrawal");
             transferPointDomain.setPoint(point);
@@ -112,7 +109,8 @@ public class TransferService {
         String state = wrapper.getState();
 
         int amount = 0;
-        Map<String, Integer> menu = new HashMap<>();
+        ArrayList<SubBuyMenuEntity> subBuyMenuEntities = new ArrayList<>();
+
         String idRecord;
         Optional<StoreMenuEntity> optional;
         StoreMenuEntity entity;
@@ -137,7 +135,9 @@ public class TransferService {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "State Not Found");
                     }
                 }
-                menu.put(utilService.getIdRecord(list.getKey()),list.getValue());
+
+                subBuyMenuEntities.add(new SubBuyMenuEntity(utilService.getIdRecord(list.getKey()), list.getValue()));
+
             } else {
                 throw new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -148,7 +148,7 @@ public class TransferService {
         BuyMenuEntity buyEntity = new BuyMenuEntity();
         buyEntity.setIdRecord(id);
         buyEntity.setState(state);
-        buyEntity.setIdMenu(menu);
+        buyEntity.setMenu(subBuyMenuEntities);
         buyEntity.setAmount(amount);
         buyEntity.setScan(false);
         buyEntity.setPaymentComplete(false);
@@ -166,17 +166,16 @@ public class TransferService {
             entity.setScan(true);
             buyMenuRepository.save(entity);
 
-            List<MenuStoreSubdomain> lists = new ArrayList<>();
+            ArrayList<MenuStoreSubdomain> lists = new ArrayList<>();
 
             StoreMenuEntity storeMenuEntity;
-            for (Map.Entry<String,Integer> menu : entity.getIdMenu().entrySet()) {
 
-                storeMenuEntity = storeRepository.findById(menu.getKey()).get();
-                storeMenuEntity.setId(utilService.getIdLocker(menu.getKey()));
+            for (SubBuyMenuEntity subBuyMenuEntity : entity.getMenu()) {
+                storeMenuEntity = storeRepository.findById(subBuyMenuEntity.getIdMenu()).get();
+                storeMenuEntity.setId(utilService.getIdLocker(subBuyMenuEntity.getIdMenu()));
                 MenuStoreSubdomain subdomain = new MenuStoreSubdomain(storeMenuEntity);
-                subdomain.setAmount(menu.getValue());
+                subdomain.setAmount(subdomain.getAmount());
                 lists.add(subdomain);
-
             }
 
             return new BuyMenuDomain(entity, lists);
@@ -191,14 +190,14 @@ public class TransferService {
         if (optional.isPresent()) {
             BuyMenuEntity entity = optional.get();
             if (!entity.isScan()) {
-                entity.setPaymentComplete(true);
                 entity.setScan(true);
-                buyMenuRepository.save(entity);
             }
 
             switch (entity.getState()) {
                 case "RECEIVE": {
-                    transferPointDomain = this.transferPoint(new TransferPointWrapper(entity.getIdRecord(), id, entity.getAmount()));
+                    transferPointDomain = this.transferPoint(
+                            new TransferPointWrapper(entity.getIdRecord(), id,
+                                    entity.getAmount()));
                     transferPointDomain.setOrigin(utilService.getIdLocker(entity.getIdRecord()));
                     transferPointDomain.setPayee(utilService.getIdLocker(id));
                     break;
@@ -206,7 +205,9 @@ public class TransferService {
                 case "EXCHANGE": {
                     int fee = CalculateFeeService.calculatePointFee(entity.getAmount());
                     entity.setAmount(entity.getAmount() - fee);
-                    transferPointDomain = this.transferPoint(new TransferPointWrapper(entity.getIdRecord(), id, entity.getAmount()));
+                    transferPointDomain = this.transferPoint(
+                            new TransferPointWrapper(id, entity.getIdRecord(),
+                                    entity.getAmount()));
                     transferPointDomain.setFee(fee);
                     transferPointDomain.setOrigin(utilService.getIdLocker(id));
                     transferPointDomain.setPayee(utilService.getIdLocker(entity.getIdRecord()));
@@ -215,20 +216,24 @@ public class TransferService {
                 default: {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "State Not Found");
                 }
-
             }
 
+            entity.setPaymentComplete(true);
+            buyMenuRepository.save(entity);
+
             ArrayList<MenuStoreSubdomain> menus = new ArrayList<>();
-            for (Map.Entry<String,Integer> menu : entity.getIdMenu().entrySet()) {
-                StoreMenuEntity storeMenuEntity = storeRepository.findById(menu.getKey()).get();
+
+            for (SubBuyMenuEntity subBuyMenuEntity : entity.getMenu()) {
+                StoreMenuEntity storeMenuEntity = storeRepository.findById(subBuyMenuEntity.getIdMenu()).get();
                 MenuStoreSubdomain subdomain = new MenuStoreSubdomain(storeMenuEntity);
-                subdomain.setAmount(menu.getValue());
+                subdomain.setAmount(subBuyMenuEntity.getAmount());
                 menus.add(subdomain);
             }
 
             transferPointDomain.setState(entity.getState());
             transferPointDomain.setMenus(menus);
             return transferPointDomain;
+
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "hash not found");
         }
@@ -251,14 +256,14 @@ public class TransferService {
     }
 
     public Map<String, Boolean> TransferExchangeInteraction(String hash) {
-        Optional<BuyMenuEntity>optional = buyMenuRepository.findById(hash);
+        Optional<BuyMenuEntity> optional = buyMenuRepository.findById(hash.trim());
         if (optional.isPresent()) {
             BuyMenuEntity entity = optional.get();
-            Map<String,Boolean> map = new HashMap<>();
-            map.put("state",entity.isPaymentComplete());
+            Map<String, Boolean> map = new HashMap<>();
+            map.put("state", entity.isPaymentComplete());
             return map;
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Hash Not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Hash Not found");
         }
     }
 }

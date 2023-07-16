@@ -52,6 +52,7 @@ public class TransferController {
     public HashDomain buildQrcodeForMenu(
             @RequestBody BuildQrcodeForMenuWrapper wrapper, HttpServletRequest req) {
         String id = req.getAttribute("id").toString();
+        System.out.println(id);
         return transferService.buildQrcodeForMenu(id,wrapper);
     }
 

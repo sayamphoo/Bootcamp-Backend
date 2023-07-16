@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,27 +17,37 @@ public class PaymentService {
     @Autowired
     private PaymentRepository paymentRepo;
 
+    @Autowired
+    private static MembersService membersService;
+
     @PostConstruct
     public void updatePayment() {
-//        List<PaymentEntity> entity = new ArrayList<>();
-//        entity.add(new PaymentEntity(1, 10));
-//        entity.add(new PaymentEntity(99, 1_000));
-//        entity.add(new PaymentEntity(984, 10_000));
-//        entity.add(new PaymentEntity(4_899, 50_000));
-//
-//        paymentRepo.saveAll(entity);
+        try {
+            Iterable<PaymentEntity> iterable = paymentRepo.findAll();
+
+            if (!iterable.iterator().hasNext()) {
+                ArrayList<PaymentEntity> entity = new ArrayList<>();
+                entity.add(new PaymentEntity(1, 10));
+                entity.add(new PaymentEntity(99, 1000));
+                entity.add(new PaymentEntity(984, 10000));
+                entity.add(new PaymentEntity(4899, 50000));
+                paymentRepo.saveAll(entity);
+            }
+        } catch (Exception e) {
+            System.out.println("\n\n\n\n\n\n\nHave data ! \n\n\n\n\n\n");
+        }
+
+
     }
 
     public UtilDomain paymentConfirm(String id, String paymentID) { // id record
         Optional<PaymentEntity> optionalPay = paymentRepo.findById(paymentID);
 
         if (optionalPay.isPresent()) {
-            MemberEntity memberEntity = ServiceDomain
-                    .getMembersService()
-                    .getEntityMember(id);
+            MemberEntity memberEntity = membersService.getEntityMember(id);
             PaymentEntity paymentEntity = optionalPay.get();
             memberEntity.setPoint(memberEntity.getPoint() + paymentEntity.getPoint());
-            ServiceDomain.getMembersService().saveMemberEntity(memberEntity);
+            membersService.saveMemberEntity(memberEntity);
         }
         return new UtilDomain(HttpStatus.OK.value(), "Success");
     }

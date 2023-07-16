@@ -8,9 +8,10 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-@Document(indexName = "payment")
+
 @Getter
 @Setter
+@Document(indexName = "paymentss")
 public class PaymentEntity {
     @Id
     @ReadOnlyProperty
@@ -19,6 +20,8 @@ public class PaymentEntity {
     private double price;
     @Field(type = FieldType.Integer, name = "point")
     private int point;
+
+    public PaymentEntity() {}
 
     public PaymentEntity(int price,int point) {
         this.price = price;

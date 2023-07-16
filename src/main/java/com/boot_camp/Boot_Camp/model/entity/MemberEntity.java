@@ -52,6 +52,8 @@ public class MemberEntity {
     @Field(type = FieldType.Boolean,name = "isActive")
     private boolean isActive;
 
+    @Field(type = FieldType.Text,name = "location")
+    private String location;
 
     public void editPersonal(EditPersonalWrapper wrapper) {
         this.name = wrapper.getName();

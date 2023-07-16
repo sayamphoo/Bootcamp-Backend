@@ -112,7 +112,7 @@ public class StoresService {
         if (optional.isPresent()) {
             MemberEntity entity = optional.get();
             utilService.checkActive(entity.isActive());
-
+            if (entity.isActive()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not activity");
             if (!entity.isStore()) {
                 entity.setStore(true);
                 memberRepository.save(entity);
@@ -135,6 +135,7 @@ public class StoresService {
         Optional<MemberEntity> memberOptional = memberRepository.findById(id);
         if (memberOptional.isPresent()) {
             MemberEntity memberEntity = memberOptional.get();
+            if (memberEntity.isActive() && memberEntity.isStore()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Store");
             utilService.checkActive(memberEntity.isActive());
             memberEntity.setPicture(fileName);
             memberRepository.save(memberEntity);
@@ -177,5 +178,19 @@ public class StoresService {
             list.add(newStoreDomain);
         }
         return list;
+    }
+
+    public UtilDomain updateLocation(String id, String location) {
+        Optional<MemberEntity> optional = memberRepository.findById(id);
+
+        if (optional.isPresent()) {
+            MemberEntity entity = optional.get();
+            if (entity.isActive() && entity.isStore()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Store");
+            entity.setLocation(location);
+            memberRepository.save(entity);
+            return new UtilDomain(HttpStatus.OK.value(), "Success");
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Not found");
+        }
     }
 }

@@ -10,11 +10,11 @@ import java.util.List;
 @Setter
 
 public class BuyMenuDomain {
-    private List<MenuStoreSubdomain> idMenu;
+    private ArrayList<MenuStoreSubdomain> menu;
     private int amount;
 
-    public BuyMenuDomain(BuyMenuEntity entity, List<MenuStoreSubdomain> lists) {
+    public BuyMenuDomain(BuyMenuEntity entity, ArrayList<MenuStoreSubdomain> lists) {
         this.amount = entity.getAmount();
-        this.idMenu = lists;
+        this.menu = lists;
     }
 }

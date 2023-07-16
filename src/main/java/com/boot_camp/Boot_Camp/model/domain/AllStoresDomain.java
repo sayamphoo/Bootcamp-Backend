@@ -12,10 +12,12 @@ public class AllStoresDomain {
     String id;
     String name;
     String picture;
+    String location;
 
     public AllStoresDomain(MemberEntity e) {
         this.id = e.getId();
         this.name = e.getName();
         this.picture = e.getPicture();
+        this.location = e.getLocation();
     }
 }

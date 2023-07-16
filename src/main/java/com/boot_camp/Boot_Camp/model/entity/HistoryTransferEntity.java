@@ -35,7 +35,9 @@ public class HistoryTransferEntity {
     @Field(type = FieldType.Integer, name = "point")
     private int point;
 
-    public HistoryTransferEntity(){}
+    public HistoryTransferEntity(){
+
+    }
 
     public HistoryTransferEntity(String accountId,String opposite ,String state,int point) {
         this.accountId = accountId;

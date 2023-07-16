@@ -8,6 +8,7 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -18,9 +19,10 @@ public class BuyMenuEntity {
     @ReadOnlyProperty
     private String id;
     private String idRecord; //store
-    private Map<String,Integer> idMenu; // idRecord
+    private ArrayList<SubBuyMenuEntity> menu;
     private int amount;
     private String state;
     private boolean isScan;
     private boolean paymentComplete;
 }
+
