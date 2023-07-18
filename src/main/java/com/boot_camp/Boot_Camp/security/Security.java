@@ -31,7 +31,6 @@ public class Security extends JwtTokenProvider {
         } else return false;
     }
 
-
     private static final String AES_ALGORITHM = "Bee_point";
 
     public static String encrypt(String plaintext, String key) throws Exception {

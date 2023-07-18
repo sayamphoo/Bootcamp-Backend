@@ -2,6 +2,7 @@ package com.boot_camp.Boot_Camp.controller;
 
 import com.boot_camp.Boot_Camp.model.domain.UtilDomain;
 import com.boot_camp.Boot_Camp.model.entity.PaymentEntity;
+import com.boot_camp.Boot_Camp.model.wrapper.BuyPaymentConfirmWrapper;
 import com.boot_camp.Boot_Camp.services.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,11 +23,10 @@ public class PaymentController {
 
     @PostMapping(path = "buy-payment-confirm")
     public UtilDomain buyPaymentConfirm(
-            @RequestParam("id") String idPayment,
-            @RequestParam("password") String pass,
+            @RequestBody BuyPaymentConfirmWrapper buyPaymentConfirmWrapper,
             HttpServletRequest httpServletRequest) {
 
         String id = httpServletRequest.getAttribute("id").toString();
-        return paymentService.paymentConfirm(id, idPayment);
+        return paymentService.paymentConfirm(id, buyPaymentConfirmWrapper);
     }
 }

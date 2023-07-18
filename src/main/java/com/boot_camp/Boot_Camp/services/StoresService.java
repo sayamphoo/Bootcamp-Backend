@@ -135,7 +135,7 @@ public class StoresService {
         Optional<MemberEntity> memberOptional = memberRepository.findById(id);
         if (memberOptional.isPresent()) {
             MemberEntity memberEntity = memberOptional.get();
-            if (memberEntity.isActive() && memberEntity.isStore()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Store");
+            if (memberEntity.isActive() && !memberEntity.isStore()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Store");
             utilService.checkActive(memberEntity.isActive());
             memberEntity.setPicture(fileName);
             memberRepository.save(memberEntity);
@@ -185,7 +185,7 @@ public class StoresService {
 
         if (optional.isPresent()) {
             MemberEntity entity = optional.get();
-            if (entity.isActive() && entity.isStore()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Store");
+            if (entity.isActive() && !entity.isStore()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Store");
             entity.setLocation(location);
             memberRepository.save(entity);
             return new UtilDomain(HttpStatus.OK.value(), "Success");

@@ -13,7 +13,7 @@ public class MemberWrapper implements Cloneable {
     private String password;
     private String birthday;
     private String sex;
-
+    private String imei;
     public MemberWrapper() {
     }
 

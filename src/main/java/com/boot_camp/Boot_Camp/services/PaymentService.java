@@ -3,11 +3,13 @@ package com.boot_camp.Boot_Camp.services;
 import com.boot_camp.Boot_Camp.model.domain.UtilDomain;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
 import com.boot_camp.Boot_Camp.model.entity.PaymentEntity;
+import com.boot_camp.Boot_Camp.model.wrapper.BuyPaymentConfirmWrapper;
 import com.boot_camp.Boot_Camp.repository.PaymentRepository;
+import com.boot_camp.Boot_Camp.security.Security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.server.ResponseStatusException;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -19,6 +21,9 @@ public class PaymentService {
 
     @Autowired
     private static MembersService membersService;
+
+    @Autowired
+    private Security security;
 
     @PostConstruct
     public void updatePayment() {
@@ -34,19 +39,22 @@ public class PaymentService {
                 paymentRepo.saveAll(entity);
             }
         } catch (Exception e) {
-            System.out.println("\n\n\n\n\n\n\nHave data ! \n\n\n\n\n\n");
+            System.out.println("\n\nHave data ! \n\n");
         }
-
-
     }
 
-    public UtilDomain paymentConfirm(String id, String paymentID) { // id record
-        Optional<PaymentEntity> optionalPay = paymentRepo.findById(paymentID);
-
+    public UtilDomain paymentConfirm(String id, BuyPaymentConfirmWrapper wrapper) { // id record
+        Optional<PaymentEntity> optionalPay = paymentRepo.findById(wrapper.getIdPayment());
         if (optionalPay.isPresent()) {
             MemberEntity memberEntity = membersService.getEntityMember(id);
+            if (!security.comparePasswords(wrapper.getPass(),memberEntity.getPassword())) {
+                throw  new ResponseStatusException(HttpStatus.NOT_FOUND,"Password Not found");
+            }
+            if ((!memberEntity.isActive()) && (memberEntity.isStore())) {
+                throw  new ResponseStatusException(HttpStatus.NOT_FOUND,"Member not Active or not is Store");
+            }
             PaymentEntity paymentEntity = optionalPay.get();
-            memberEntity.setPoint(memberEntity.getPoint() + paymentEntity.getPoint());
+            memberEntity.setPoint(memberEntity.getPoint() + (paymentEntity.getPoint() * wrapper.getAmount()));
             membersService.saveMemberEntity(memberEntity);
         }
         return new UtilDomain(HttpStatus.OK.value(), "Success");

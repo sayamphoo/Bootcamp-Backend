@@ -1,16 +1,15 @@
 package com.boot_camp.Boot_Camp.services;
 
-import com.boot_camp.Boot_Camp.model.domain.PromotionDomain;
 import com.boot_camp.Boot_Camp.model.domain.UtilDomain;
 import com.boot_camp.Boot_Camp.model.entity.PromotionEntity;
-import com.boot_camp.Boot_Camp.model.wrapper.PromotionWrapper;
 import com.boot_camp.Boot_Camp.repository.PromotionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 @Service
 public class PromotionService {
@@ -19,30 +18,27 @@ public class PromotionService {
     private PromotionRepository promotionRepo;
 
     @Autowired
+    private MembersService membersService;
+
+    @Autowired
     private UtilService utilService;
 
-    //Get
-    public List<PromotionDomain> promotion() {
-        List<PromotionDomain> domains = new ArrayList<>();
-        Iterable<PromotionEntity> entity = promotionRepo.findAll();
+    public UtilDomain addPromotion(String name, String code, String description, MultipartFile file)  {
+        PromotionEntity entity = new PromotionEntity();
+        entity.setName(name);
+        entity.setCoed(code);
+        entity.setDescription(description);
+        try{
+            entity.setPicture(new SaveFileService().saveImage(file));
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,e.getMessage());
+        }
 
-        entity.forEach(e -> {
-            if (!e.getIsActive()){
-                return;
-            }
-            e.setId(utilService.getIdLocker(e.getId()));
-            domains.add(new PromotionDomain(e));
-        });
-
-        return domains;
-    }
-
-    //Post
-    public UtilDomain promotion(PromotionWrapper w) {
-        PromotionEntity entity = new PromotionEntity(w);
         promotionRepo.save(entity);
-        utilService.saveLocker("3", entity.getId());
-        return new UtilDomain(HttpStatus.OK.value(), "Success");
+
+        return new UtilDomain(HttpStatus.OK.value(),"Success");
     }
+
 
 }
+

@@ -29,7 +29,8 @@ public class RequestAuthorizationMiddleware implements HandlerInterceptor {
                 "login",
                 "register",
                 "util",
-                "forgot-password"
+                "forgot-password",
+                "add-promotion"
         };
 
         for (String path : pathByPassList) {

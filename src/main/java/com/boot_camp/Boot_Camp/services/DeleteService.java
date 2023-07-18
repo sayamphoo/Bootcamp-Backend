@@ -40,8 +40,8 @@ public class DeleteService {
                 return removeAccount(utilService.getIdRecord(idLocker));
             case "2":
                 return removeMenu(utilService.getIdRecord(idLocker));
-            case "3":
-                return removePromotion(utilService.getIdRecord(idLocker));
+//            case "3":
+//                return removePromotion(utilService.getIdRecord(idLocker));
             default:
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -49,19 +49,19 @@ public class DeleteService {
         }
     }
 
-    private UtilDomain removePromotion(String idRecord) {
-
-        Optional<PromotionEntity> optional = promotionRepo.findById(idRecord);
-        if (optional.isPresent()) {
-            PromotionEntity entity = optional.get();
-            entity.setIsActive(false);
-            promotionRepo.save(entity);
-
-            return new UtilDomain(HttpStatus.OK.value(),"Success");
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Promotion Not Found");
-        }
-    }
+//    private UtilDomain removePromotion(String idRecord) {
+//
+//        Optional<PromotionEntity> optional = promotionRepo.findById(idRecord);
+//        if (optional.isPresent()) {
+//            PromotionEntity entity = optional.get();
+//            entity.setIsActive(false);
+//            promotionRepo.save(entity);
+//
+//            return new UtilDomain(HttpStatus.OK.value(),"Success");
+//        } else {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Promotion Not Found");
+//        }
+//    }
 
 
     private UtilDomain removeAccount(String idRecord) {

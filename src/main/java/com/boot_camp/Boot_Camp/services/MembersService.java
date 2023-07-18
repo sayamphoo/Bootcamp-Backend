@@ -4,9 +4,11 @@ import com.boot_camp.Boot_Camp.enums.CategoryLockerId;
 import com.boot_camp.Boot_Camp.model.domain.PersonalDataDomain;
 import com.boot_camp.Boot_Camp.model.domain.*;
 import com.boot_camp.Boot_Camp.model.entity.HistoryTransferEntity;
+import com.boot_camp.Boot_Camp.model.entity.ImeiEntity;
 import com.boot_camp.Boot_Camp.model.entity.MemberEntity;
 import com.boot_camp.Boot_Camp.model.wrapper.*;
 import com.boot_camp.Boot_Camp.repository.HistoryTransferRepository;
+import com.boot_camp.Boot_Camp.repository.ImeiRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import com.boot_camp.Boot_Camp.repository.StatisticsMenuRepository;
 import com.boot_camp.Boot_Camp.security.EmailValidator;
@@ -34,9 +36,13 @@ public class MembersService {
     @Autowired
     private UtilService utilService;
 
+    @Autowired
+    private ImeiRepository imeiRepository;
+
     //-------- Sign In --------------
 
     public MemberDomain login(MemberWrapper w) {
+
         MemberDomain memberDomain = new MemberDomain();
 
         if (!EmailValidator.isValidEmail(w.getUsername())) {
@@ -75,11 +81,13 @@ public class MembersService {
         String username = w.getUsername();
         String sex = w.getSex();
         String password = w.getPassword();
+        String imei = w.getImei();
 
         if (name.isEmpty()
                 || birthday.isEmpty()
                 || username.length() < 6
                 || sex.isEmpty()
+                || imei.isEmpty()
                 || password.length() < 8
                 || !EmailValidator.isValidEmail(username)) {
 
@@ -97,13 +105,22 @@ public class MembersService {
                     "This Name is already taken");
         }
 
+        ImeiEntity imeiEntity = imeiRepository.findByImei(imei);
+
         MemberEntity entity = w.clone().toEntity();
         entity.setPassword(security.hashPassword(password));
-        entity.setPoint(3000);
+
+        if (imeiEntity == null) {
+            entity.setPoint(1000);
+            imeiRepository.save(new ImeiEntity(imei));
+        } else {
+            entity.setPoint(0);
+        }
+
         entity.setActive(true);
         entity.setStore(false);
         memberRepo.save(entity);
-        utilService.saveLocker(CategoryLockerId.Account.getSubId(),entity.getId());
+        utilService.saveLocker(CategoryLockerId.Account.getSubId(), entity.getId());
 
         // Login after register
         return this.login(w);
@@ -256,12 +273,12 @@ public class MembersService {
         }
     }
 
-    protected MemberEntity getEntityMember(String id){
+    protected MemberEntity getEntityMember(String id) {
         Optional<MemberEntity> optional = memberRepo.findById(id);
         if (optional.isPresent()) {
             return optional.get();
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member Not found");
         }
     }
 

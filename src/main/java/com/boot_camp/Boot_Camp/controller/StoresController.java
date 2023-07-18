@@ -97,6 +97,5 @@ public class StoresController {
         return storesService.updateLocation(id,location);
     }
 
-
     //-----------------------------------------------------------------------------
 }

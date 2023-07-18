@@ -1,8 +1,6 @@
 package com.boot_camp.Boot_Camp.model.entity;
 
 
-import com.boot_camp.Boot_Camp.model.domain.PromotionDomain;
-import com.boot_camp.Boot_Camp.model.wrapper.PromotionWrapper;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -19,26 +17,21 @@ public class PromotionEntity {
     @ReadOnlyProperty
     private String id;
 
+    @Field(type = FieldType.Text, name = "name")
+    private String name;
+
+    @Field(type = FieldType.Text, name = "code")
+    private String coed;
+//
+//    @Field(type = FieldType.Text, name = "type")
+//    private String type;
+
+    @Field(type = FieldType.Text, name = "description")
+    private String description;
+
     @Field(type = FieldType.Text, name = "picture")
     private String picture;
 
-    @Field(type = FieldType.Text,name = "title")
-    private String title;
-
-    @Field(type = FieldType.Text,name = "expired")
-    private String expired;
-
-    @Field(type = FieldType.Text,name = "description")
-    private String description;
-
-    @Field(type = FieldType.Boolean,name = "isActive")
-    private Boolean isActive;
-
-    public PromotionEntity(PromotionWrapper w) {
-        this.picture = w.getPicture();
-        this.title =  w.getTitle();
-        this.expired = w.getExpired();
-        this.description = w.getDescription();
-        this.isActive = true;
-    }
+    @Field(type = FieldType.Boolean)
+    private Boolean isActivate;
 }

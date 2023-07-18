@@ -41,6 +41,14 @@ public class SaveFileService {
         restTemplate.postForEntity(path, requestEntity, String.class);
     }
 
+    public String saveImage(MultipartFile file) throws IOException {
+        String name = String.valueOf(System.currentTimeMillis());
+        this.saveImage(file,name);
+        return name;
+    }
+
+
+
     public ResponseEntity<byte[]> getImages(String fileName) throws IOException {
         String path = domain + "/image/" + fileName;
 
