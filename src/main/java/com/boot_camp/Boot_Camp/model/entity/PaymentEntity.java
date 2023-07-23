@@ -8,10 +8,9 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-
 @Getter
 @Setter
-@Document(indexName = "paymentss")
+@Document(indexName = "payments-point")
 public class PaymentEntity {
     @Id
     @ReadOnlyProperty

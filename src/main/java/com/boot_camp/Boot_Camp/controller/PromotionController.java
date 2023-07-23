@@ -15,7 +15,7 @@ public class PromotionController {
     @Autowired
     private PromotionService promotionService;
 
-    @PostMapping("add-promotion")
+    @PostMapping("/add-promotion")
     public UtilDomain addPromotion(
             @RequestParam("name") String name,
             @RequestParam("code") String code,

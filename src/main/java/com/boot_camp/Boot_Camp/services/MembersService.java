@@ -121,7 +121,6 @@ public class MembersService {
         entity.setStore(false);
         memberRepo.save(entity);
         utilService.saveLocker(CategoryLockerId.Account.getSubId(), entity.getId());
-
         // Login after register
         return this.login(w);
     }
@@ -273,7 +272,7 @@ public class MembersService {
         }
     }
 
-    protected MemberEntity getEntityMember(String id) {
+    public MemberEntity getEntityMember(String id) {
         Optional<MemberEntity> optional = memberRepo.findById(id);
         if (optional.isPresent()) {
             return optional.get();

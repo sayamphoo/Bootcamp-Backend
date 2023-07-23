@@ -3,6 +3,7 @@ package com.boot_camp.Boot_Camp.controller;
 import com.boot_camp.Boot_Camp.model.domain.UtilDomain;
 import com.boot_camp.Boot_Camp.model.domain.AllStoresDomain;
 import com.boot_camp.Boot_Camp.model.domain.MenuStoreDomain;
+import com.boot_camp.Boot_Camp.model.wrapper.UpDateLocation;
 import com.boot_camp.Boot_Camp.repository.*;
 import com.boot_camp.Boot_Camp.services.UtilService;
 import com.boot_camp.Boot_Camp.services.MembersService;
@@ -91,10 +92,11 @@ public class StoresController {
 
     @PostMapping(value = "/update-location")
     public UtilDomain updateLocation(
-            @RequestParam("location") String location,HttpServletRequest request
+            @RequestBody UpDateLocation upDateLocation, HttpServletRequest request
     ) {
         String id = request.getAttribute("id").toString();
-        return storesService.updateLocation(id,location);
+
+        return storesService.updateLocation(id,upDateLocation.getLocation());
     }
 
     //-----------------------------------------------------------------------------

@@ -1,4 +1,3 @@
-
 FROM amd64/amazoncorretto:11-alpine
 
 WORKDIR /app

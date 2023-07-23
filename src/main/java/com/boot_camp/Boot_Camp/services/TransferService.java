@@ -4,6 +4,8 @@ import com.boot_camp.Boot_Camp.model.domain.*;
 import com.boot_camp.Boot_Camp.model.entity.*;
 import com.boot_camp.Boot_Camp.model.wrapper.BuildQrcodeForMenuWrapper;
 import com.boot_camp.Boot_Camp.model.wrapper.TransferPointWrapper;
+import com.boot_camp.Boot_Camp.report.exchange_and_receives.ExchangeAndReceivesEntity;
+import com.boot_camp.Boot_Camp.report.exchange_and_receives.ExchangeAndReceivesService;
 import com.boot_camp.Boot_Camp.repository.BuyMenuRepository;
 import com.boot_camp.Boot_Camp.repository.MemberRepository;
 import com.boot_camp.Boot_Camp.repository.StoreRepository;
@@ -29,6 +31,9 @@ public class TransferService {
 
     @Autowired
     UtilService utilService;
+
+    @Autowired
+    private ExchangeAndReceivesService exchangeAndReceivesService;
 
     public TransferPointDomain transferPoint(TransferPointWrapper transferPointWrapper) {
         TransferPointDomain transferPointDomain = new TransferPointDomain();
@@ -189,6 +194,19 @@ public class TransferService {
         TransferPointDomain transferPointDomain;
         if (optional.isPresent()) {
             BuyMenuEntity entity = optional.get();
+
+            ArrayList<String> list = new ArrayList<>();
+
+            ArrayList<MenuStoreSubdomain> menus = new ArrayList<>();
+
+            for (SubBuyMenuEntity subBuyMenuEntity : entity.getMenu()) {
+                StoreMenuEntity storeMenuEntity = storeRepository.findById(subBuyMenuEntity.getIdMenu()).get();
+                MenuStoreSubdomain subdomain = new MenuStoreSubdomain(storeMenuEntity);
+                subdomain.setAmount(subBuyMenuEntity.getAmount());
+                menus.add(subdomain);
+                list.add(subdomain.getNameMenu());
+            }
+
             if (!entity.isScan()) {
                 entity.setScan(true);
             }
@@ -200,6 +218,16 @@ public class TransferService {
                                     entity.getAmount()));
                     transferPointDomain.setOrigin(utilService.getIdLocker(entity.getIdRecord()));
                     transferPointDomain.setPayee(utilService.getIdLocker(id));
+
+
+                    exchangeAndReceivesService.saveExchangeAndReceives(
+                            new ExchangeAndReceivesEntity(
+                                    id,
+                                    "give",
+                                    entity.getAmount(),
+                                    list
+                            )
+                    );
                     break;
                 }
                 case "EXCHANGE": {
@@ -211,6 +239,14 @@ public class TransferService {
                     transferPointDomain.setFee(fee);
                     transferPointDomain.setOrigin(utilService.getIdLocker(id));
                     transferPointDomain.setPayee(utilService.getIdLocker(entity.getIdRecord()));
+                    exchangeAndReceivesService.saveExchangeAndReceives(
+                            new ExchangeAndReceivesEntity(
+                                    id,
+                                    "exchange",
+                                    entity.getAmount(),
+                                    list
+                            )
+                    );
                     break;
                 }
                 default: {
@@ -221,14 +257,6 @@ public class TransferService {
             entity.setPaymentComplete(true);
             buyMenuRepository.save(entity);
 
-            ArrayList<MenuStoreSubdomain> menus = new ArrayList<>();
-
-            for (SubBuyMenuEntity subBuyMenuEntity : entity.getMenu()) {
-                StoreMenuEntity storeMenuEntity = storeRepository.findById(subBuyMenuEntity.getIdMenu()).get();
-                MenuStoreSubdomain subdomain = new MenuStoreSubdomain(storeMenuEntity);
-                subdomain.setAmount(subBuyMenuEntity.getAmount());
-                menus.add(subdomain);
-            }
 
             transferPointDomain.setState(entity.getState());
             transferPointDomain.setMenus(menus);
